@@ -2,13 +2,12 @@
 
 use self::problem::{Ctx, DeadEnds};
 
-mod offset;
-mod problem;
-
-mod errors;
+pub mod offset;
+pub mod problem;
+pub mod errors;
+pub mod chars;
 
 pub enum NoContext {}
-
 pub enum NoProblem {}
 
 pub type Result<'a, T, C = NoContext, P = NoProblem> =
@@ -67,7 +66,7 @@ where
 
 //OR
 
-fn or<'a, P, C, P1, P2, T>(p1: P1, p2: P2) -> impl Parser<'a, C, P, T = T>
+pub fn or<'a, P, C, P1, P2, T>(p1: P1, p2: P2) -> impl Parser<'a, C, P, T = T>
 where
     P1: Parser<'a, C, P, T = T>,
     P2: Parser<'a, C, P, T = T>,
@@ -156,10 +155,3 @@ pub fn preceded<'a, C, P, T>(
     (left, right).map(|(_, b)| b)
 }
 
-mod chars;
-
-#[cfg(test)]
-mod examples;
-
-//#[cfg(test)]
-//mod tests;

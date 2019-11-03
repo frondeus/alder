@@ -1,5 +1,5 @@
-use crate::examples::{ConsContext, Problem};
-use crate::problem::{DeadEnds, DisplayInput};
+use crate::{ConsContext, Problem};
+use alder::problem::{DeadEnds, DisplayInput};
 use colored::Colorize;
 use std::error::Error as StdError;
 use std::fmt::{Display, Error, Formatter};
