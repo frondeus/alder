@@ -1,0 +1,30 @@
+---
+source: examples/md/main.rs
+expression: err
+---
+[1;31m-- SYNTAX ERROR --[0m
+I tried to parse const value
+[36m0  | [0m[97ma[0m[90m\EOF[0m
+[36m   | [0m[1;36m^ started here[0m
+
+I expected one of: [1;36m"[0m, [1;36m[[0m, [1;36mnum[0m, [1;36m{[0m
+
+I found few possible branches:
+
+[1;37m*[0m I tried to parse const number
+[36m0  | [0m[97ma[0m[90m\EOF[0m
+[36m   | [0m[1m[31m^ unexpected token.[0m[1m I expected number like 0, 1, -2, 0.5[0m
+
+[1;37m*[0m I tried to parse const string
+[36m0  | [0m[97ma[0m[90m\EOF[0m
+[36m   | [0m[1m[31m^ unexpected token.[0m[1m I expected '"'[0m
+
+[1;37m*[0m I tried to parse const array
+[36m0  | [0m[97ma[0m[90m\EOF[0m
+[36m   | [0m[1m[31m^ unexpected token.[0m[1m I expected '['[0m
+
+[1;37m*[0m I tried to parse const obj
+[36m0  | [0m[97ma[0m[90m\EOF[0m
+[36m   | [0m[1m[31m^ unexpected token.[0m[1m I expected '{'[0m
+
+

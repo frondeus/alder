@@ -10,6 +10,5 @@ derive_more = "0.15.0"
 colored = "1.8.0"
 
 [dev-dependencies]
-#test-case = "0.3.3"
-test-case = { git = "ssh://git@github.com/frondeus/test-case.git", branch = "wpo_pattern_matching" }
+test-case = "1.0.0-alpha-1"
 insta = "0.12.0"

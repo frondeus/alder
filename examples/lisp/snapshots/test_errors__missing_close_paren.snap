@@ -1,9 +1,9 @@
 ---
-source: src/examples/mod.rs
+source: examples/lisp/main.rs
 expression: err
 ---
 [1;31m-- SYNTAX ERROR --[0m
-I tried to parse cons pair [1;37m(<expr> . <expr>)[0m
+I tried to parse expression
 [36m0  | [0m[97m([0m[90m\n[0m
 [36m   | [0m[1;36m^ started here[0m
 [36m1  | [0m[97m    ()[0m[90m\n[0m

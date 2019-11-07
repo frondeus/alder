@@ -1,9 +1,10 @@
+#![feature(drain_filter)]
+use crate::report::Report;
 use alder::chars::{spaces, token};
 use alder::errors::ResultExt;
 use alder::problem::cut;
-use alder::{Parser, preceded, or};
+use alder::{or, preceded, Parser};
 use colored::Colorize;
-use crate::report::Report;
 use derive_more::Display;
 use std::fmt::Debug;
 use test_case::test_case;
@@ -56,7 +57,6 @@ pub enum ConsContext {
     Expression,
 }
 
-
 fn nil<'a>() -> impl Parser<'a, ConsContext, Problem, T = Cons> {
     //tag("()", Problem::ExpectedNil)
     (
@@ -105,12 +105,13 @@ fn test_errors<'a, T: Debug>(p: impl Parser<'a, ConsContext, Problem, T = T>, in
 
 fn main() {
     let input = "()";
-    let res = cons().parse(input)
+    let res = cons()
+        .parse(input)
         .map_err(|ends| Report::new(input, ends))
         .unwrap_display();
 
     match res {
         (Cons::Nil, _) => (),
-        _ => panic!()
+        _ => panic!(),
     }
 }

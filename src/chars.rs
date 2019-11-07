@@ -69,6 +69,21 @@ pub fn tag<C, P: Clone>(expected: &str, problem: P) -> impl Parser<C, P, T = &st
 pub fn spaces<'a, C, P>() -> impl Parser<'a, C, P, T = &'a str> {
     chomp_while(|f| f.is_whitespace())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fmt::Debug;
+    use test_case::test_case;
+
+    #[test_case(chomp_while(|c| c == 'a'), "aaaabbb" => ("aaaa", "bbb"))]
+    #[test_case(chomp_while(|c| c != 'b'), "aaaabbb" => ("aaaa", "bbb"))]
+    fn test<'a>(p: impl Parser<'a, (), (), T = &'a str>, input: &'a str) -> (&'a str, &'a str) {
+        let res = p.parse(input);
+
+        res.unwrap()
+    }
+}
 /*
 impl<'a, C> Parser<'a, C, CharProblem<'a>> for char {
     type T = char;

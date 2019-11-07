@@ -1,11 +1,12 @@
 #![allow(dead_code)]
 
 use self::problem::{Ctx, DeadEnds};
+use std::iter::FromIterator;
 
+pub mod chars;
+pub mod errors;
 pub mod offset;
 pub mod problem;
-pub mod errors;
-pub mod chars;
 
 pub enum NoContext {}
 pub enum NoProblem {}
@@ -64,59 +65,106 @@ where
     }
 }
 
+//Recognize
+
+pub fn recognize<'a, C, P, T>(
+    p: impl Parser<'a, C, P, T = T>,
+) -> impl Parser<'a, C, P, T = &'a str> {
+    use crate::offset::Offset;
+    move |i| {
+        let (t, r) = p.parse(i)?;
+        let index = i.offset(r);
+        Ok((&i[..index], r))
+    }
+}
+
+// Opt
+pub fn opt<'a, C, P, T>(p: impl Parser<'a, C, P, T = T>) -> impl Parser<'a, C, P, T = Option<T>> {
+    move |i| {
+        let res = p.parse(i);
+        match res {
+            Ok((t, r)) => Ok((Some(t), r)),
+            _ => Ok((None, i)),
+        }
+    }
+}
+
 //OR
+pub trait Alt<'a, C, P> {
+    type T;
+    fn alt(&self, i: &'a str) -> Result<'a, Self::T, C, P>;
+}
+
+pub struct Or<T> {
+    tuple: T,
+}
+
+pub trait IntoParser {
+    fn or(self) -> Or<Self>
+    where
+        Self: Sized;
+}
+
+impl<'a, C, P, TP> Parser<'a, C, P> for Or<TP>
+where
+    TP: Alt<'a, C, P>,
+{
+    type T = TP::T;
+
+    fn parse(&self, i: &'a str) -> Result<'a, Self::T, C, P> {
+        self.tuple.alt(i)
+    }
+}
 
 pub fn or<'a, P, C, P1, P2, T>(p1: P1, p2: P2) -> impl Parser<'a, C, P, T = T>
 where
     P1: Parser<'a, C, P, T = T>,
     P2: Parser<'a, C, P, T = T>,
 {
-    move |i| {
-        let mut dead_ends = vec![];
-        match p1.parse(i) {
-            Ok(o) => return Ok(o),
-            Err(e) if e.iter().any(|d| d.failure) => {
-                return Err(e);
-            }
-            Err(mut e) => {
-                dead_ends.append(&mut e);
-                match p2.parse(i) {
-                    Ok(o) => return Ok(o),
-                    Err(e) if e.iter().any(|d| d.failure) => {
-                        return Err(e);
-                    }
-                    Err(mut e) => {
-                        dead_ends.append(&mut e);
-                    }
-                }
-            }
-        }
-
-        Err(dead_ends.into())
-    }
+    (p1, p2).or()
 }
 
-/*
-#[allow(non_snake_case)]
-impl <'a, P, C, P1> Parser<'a, C, P> for &[P1]
-where
-P1: Parser<'a, C, P>
-{
-    type T = P1::T;
-
-    fn parse(&self, i: &'a str) -> Result<'a, Self::T, C, P> {
-        let mut dead_ends = vec![];
-        for p in self.iter() {
-            match p.parse(i) {
-                Ok((o1, r1)) => return Ok((o1, r1)),
-                Err(mut e) => dead_ends.append(&mut e)
-            }
+macro_rules! impl_alt {
+    () => ();
+    ($($name:ident)+) => (
+        impl<'a, $($name),*> IntoParser for ($($name,)*) {
+            fn or(self) -> Or<Self> where Self: Sized { Or { tuple: self } }
         }
 
-        Err( dead_ends.into() )
-    }
+        #[allow(non_snake_case)]
+        impl <'a, P, C, T, $($name),* > Alt<'a, C, P> for ($($name,)*)
+        where
+            $($name: Parser<'a, C, P, T = T>),*
+        {
+            type T = T;
+
+            fn alt(&self, i: &'a str) -> Result<'a, Self::T, C, P> {
+                let ($($name,)*) = self;
+                let mut dead_ends = vec![];
+
+                $(
+                    match $name.parse(i) {
+                        Ok(o) => return Ok(o),
+                        Err(e) if e.failure() => return Err(e),
+                        Err(mut e) => {
+                            dead_ends.append(&mut e);
+                        }
+                    }
+                )*
+
+                Err(dead_ends.into())
+            }
+        }
+    );
 }
-*/
+
+impl_alt! {AP BP}
+impl_alt! {AP BP CP}
+impl_alt! {AP BP CP DP}
+impl_alt! {AP BP CP DP EP}
+impl_alt! {AP BP CP DP EP FP}
+impl_alt! {AP BP CP DP EP FP GP}
+impl_alt! {AP BP CP DP EP FP GP HP}
 
 //AND
 macro_rules! impl_parser_tuple {
@@ -155,3 +203,41 @@ pub fn preceded<'a, C, P, T>(
     (left, right).map(|(_, b)| b)
 }
 
+pub fn terminated<'a, C, P, T>(
+    left: impl Parser<'a, C, P, T = T>,
+    right: impl Parser<'a, C, P>,
+) -> impl Parser<'a, C, P, T = T> {
+    (left, right).map(|(a, _)| a)
+}
+
+//Fixme: Maybe generator into iterator?
+pub fn delimited<'a, C, P, T, V>(
+    p1: impl Parser<'a, C, P, T = T>,
+    del: impl Parser<'a, C, P>,
+) -> impl Parser<'a, C, P, T = V>
+where
+    V: FromIterator<T>,
+{
+    move |mut i| {
+        let mut t = vec![];
+        loop {
+            match p1.parse(i) {
+                Ok((t1, rest)) => {
+                    t.push(t1);
+                    i = rest;
+                }
+                Err(e) if e.failure() => return Err(e),
+                Err(e) => break,
+            }
+            match del.parse(i) {
+                Ok((_, rest)) => {
+                    i = rest;
+                }
+                Err(e) if e.failure() => return Err(e),
+                Err(e) => break,
+            }
+        }
+        let t = V::from_iter(t.into_iter());
+        Ok((t, i))
+    }
+}

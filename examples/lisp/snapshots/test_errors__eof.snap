@@ -1,5 +1,5 @@
 ---
-source: src/examples/mod.rs
+source: examples/lisp/main.rs
 expression: err
 ---
 [1;31m-- SYNTAX ERROR --[0m

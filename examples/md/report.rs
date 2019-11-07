@@ -1,4 +1,5 @@
-use crate::{ConsContext, Problem};
+use crate::{Context, Problem};
+use alder::offset::Offset;
 use alder::problem::{DeadEnds, DisplayInput};
 use colored::Colorize;
 use std::error::Error as StdError;
@@ -6,13 +7,13 @@ use std::fmt::{Display, Error, Formatter};
 
 #[derive(Debug)]
 pub struct Report<'a> {
-    ends: DeadEnds<'a, ConsContext, Problem>,
-    root: Option<(&'a str, ConsContext)>,
+    ends: DeadEnds<'a, Context, Problem>,
+    root: Option<(&'a str, Context)>,
     input: &'a str,
 }
 
 impl<'a> Report<'a> {
-    pub fn new(input: &'a str, ends: DeadEnds<'a, ConsContext, Problem>) -> Self {
+    pub fn new(input: &'a str, ends: DeadEnds<'a, Context, Problem>) -> Self {
         Self {
             input,
             ends,
@@ -22,13 +23,17 @@ impl<'a> Report<'a> {
     }
 
     fn filter_ends(mut self) -> Self {
+        let input = self.input;
         if self.ends.len() > 1 {
             self.root = self.ends[0].context.pop();
             self.ends.iter_mut().skip(1).map(|d| d.context.pop());
             self.ends.iter_mut().for_each(|d| {
-                d.context.drain_filter(|(_, c)| match c {
-                    ConsContext::Expression => true,
-                    _ => false,
+                d.context.dedup_by(|(a_w, a_c), (b_w, b_c)| {
+                    input.offset(a_w) == input.offset(b_w)
+                    //match c {
+                    //Context::Expression => true,
+                    //_ => false
+                    //}
                 });
                 d.context.reverse();
             });
@@ -46,7 +51,7 @@ impl<'a> Display for Report<'a> {
         writeln!(f, "{}", "-- SYNTAX ERROR --".red().bold())?;
         if self.ends.len() == 1 {
             let end = &self.ends[0];
-            if let Some(ctx) = end.context.last() {
+            if let Some(ctx) = end.context.first() {
                 writeln!(f, "{}", ctx.1)?;
                 DisplayInput::new(self.input, ctx.0)
                     .with_desc("^ started here".cyan())

@@ -39,6 +39,12 @@ pub struct DeadEnds<'a, C, P> {
     pub ends: Vec<DeadEnd<'a, C, P>>,
 }
 
+impl<'a, C, P> DeadEnds<'a, C, P> {
+    pub fn failure(&self) -> bool {
+        self.ends.iter().any(|e| e.failure)
+    }
+}
+
 impl<'a, P, C> Deref for DeadEnds<'a, C, P> {
     type Target = Vec<DeadEnd<'a, C, P>>;
 
@@ -85,7 +91,8 @@ impl<'a, P, C> DeadEnd<'a, C, P> {
 
     pub fn add_context(&mut self, c: C, input: &'a str) {
         //if !self.failure {
-        self.context.insert(0, (input, c));
+        //self.context.insert(0, (input, c));
+        self.context.push((input, c));
         //}
     }
 
@@ -132,7 +139,6 @@ impl<'a> DisplayInput<'a> {
             "\\n"
         }
     }
-
 
     /// Output: (line, column)
     fn position(&self, lines: &[&'a str], whre: &'a str) -> (usize, usize) {

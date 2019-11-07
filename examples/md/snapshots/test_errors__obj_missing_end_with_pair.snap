@@ -1,0 +1,12 @@
+---
+source: examples/md/main.rs
+expression: err
+---
+[1;31m-- SYNTAX ERROR --[0m
+I tried to parse const obj
+[36m0  | [0m[97m{foo = 5[0m[90m\EOF[0m
+[36m   | [0m[1;36m^ started here[0m
+[36m0  | [0m[97m{foo = 5[0m[90m\EOF[0m
+[36m   | [0m        [1m[31m^ unexpected token.[0m[1m I expected '}'[0m
+
+
