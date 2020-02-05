@@ -1,0 +1,15 @@
+```
+{
+    "foo": "bar,
+    "baz": 2
+}
+```
+
+(String): "{\n    \""
+    (ERROR): "{"
+    (InnerString): "\n    "
+    (DoubleQuote): "\""
+
+REST: "foo\": \"bar,\n    \"baz\": 2\n}"
+PROBLEMS:
+* Unexpected '{' - "{\n    \"foo\": \"bar,\n    \"baz\": 2\n}"

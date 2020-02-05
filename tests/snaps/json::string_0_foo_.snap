@@ -1,0 +1,10 @@
+```
+"foo"
+```
+
+(String): "\"foo\""
+    (DoubleQuote): "\""
+    (InnerString): "foo"
+    (DoubleQuote): "\""
+
+NO PROBLEMS

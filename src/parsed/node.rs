@@ -1,0 +1,48 @@
+use crate::*;
+use std::fmt::{Display, Error, Formatter};
+
+#[derive(Debug, Clone)]
+pub struct Node<'a> {
+    pub kind: NodeKind,
+    pub location: Location<'a>,
+    pub children: Vec<Node<'a>>,
+}
+
+impl<'a> Node<'a> {
+    pub fn error(location: Location<'a>) -> Self {
+        Self {
+            kind: NodeKind::ERROR,
+            location,
+            children: vec![],
+        }
+    }
+
+    pub fn token(kind: NodeKind, location: Location<'a>) -> Self {
+        Self {
+            kind,
+            location,
+            children: vec![],
+        }
+    }
+
+    pub fn is_error(&self) -> bool {
+        self.kind.is_error()
+    }
+}
+
+impl<'a> Display for Node<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let width = f.width().unwrap_or_default();
+        if width > 0 {
+            write!(f, "{:width$}", " ", width = width)?;
+        }
+        write!(f, "({})", self.kind.0)?;
+        write!(f, ": ")?;
+        writeln!(f, "{:?}", self.location)?;
+        let c_width = width + 4;
+        for child in self.children.iter() {
+            write!(f, "{:width$}", child, width = c_width)?;
+        }
+        Ok(())
+    }
+}
