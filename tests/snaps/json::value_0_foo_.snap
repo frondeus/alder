@@ -1,0 +1,11 @@
+```
+"foo"
+```
+
+VALUE: "\"foo\""
+    STRING: "\"foo\""
+        DOUBLEQUOTE: "\""
+        INNERSTRING: "foo"
+        DOUBLEQUOTE: "\""
+
+NO PROBLEMS

@@ -36,7 +36,11 @@ impl<'a> Display for Node<'a> {
         if width > 0 {
             write!(f, "{:width$}", " ", width = width)?;
         }
-        write!(f, "({})", self.kind.0)?;
+        #[cfg(not(feature="debug"))]
+        write!(f, "{}", self.kind.0)?;
+        #[cfg(feature="debug")]
+        write!(f, "{}", self.kind.0.to_uppercase())?;
+
         write!(f, ": ")?;
         writeln!(f, "{:?}", self.location)?;
         let c_width = width + 4;

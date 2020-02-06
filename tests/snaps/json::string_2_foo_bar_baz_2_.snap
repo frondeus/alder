@@ -5,10 +5,10 @@
 }
 ```
 
-(String): "{\n    \""
-    (ERROR): "{"
-    (InnerString): "\n    "
-    (DoubleQuote): "\""
+STRING: "{\n    \""
+    ERROR: "{"
+    INNERSTRING: "\n    "
+    DOUBLEQUOTE: "\""
 
 REST: "foo\": \"bar,\n    \"baz\": 2\n}"
 PROBLEMS:

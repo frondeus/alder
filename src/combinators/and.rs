@@ -21,6 +21,7 @@ macro_rules! impl_parser_tuple {
 );
 }
 
+impl_parser_tuple! {AP}
 impl_parser_tuple! {AP BP}
 impl_parser_tuple! {AP BP CP}
 impl_parser_tuple! {AP BP CP DP}
@@ -47,6 +48,7 @@ macro_rules! impl_into_node_tuple {
 );
 }
 
+impl_into_node_tuple! {AP}
 impl_into_node_tuple! {AP BP}
 impl_into_node_tuple! {AP BP CP}
 impl_into_node_tuple! {AP BP CP DP}

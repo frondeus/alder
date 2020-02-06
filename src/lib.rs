@@ -51,6 +51,12 @@ pub trait Parser<'a> {
     {
         Map { p: self, f }
     }
+
+    fn boxed(self) -> Box<dyn Parser<'a, Output = Self::Output> + 'a>
+    where Self: Sized + 'a
+    {
+        Box::new(self)
+    }
 }
 
 /// Implementation for every closure.

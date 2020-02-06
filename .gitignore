@@ -1,4 +1,5 @@
 .idea
 /target
 **/*.rs.bk
+**/*.snap.new
 Cargo.lock

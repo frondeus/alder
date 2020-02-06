@@ -37,7 +37,7 @@ impl TestCase {
             #[test]
             fn #name() {
                 let input = #input;
-                let actual = #fn_name().parse(dbg!(input));
+                let actual = #fn_name().parse(input);
                 let actual_dbg = format!("{}", actual);
                 alder::testing::snap(actual_dbg, module_path!(), stringify!(#name));
             }
@@ -91,12 +91,7 @@ pub fn alder(_args: TokenStream, input: TokenStream) -> TokenStream {
     let out = quote! {
         #item
 
-        //#[cfg(test)]
-        //mod #fn_name_tests {
-            //use super::*;
-
-            #(#test_cases)*
-        //}
+        #(#test_cases)*
     };
 
     out.into()

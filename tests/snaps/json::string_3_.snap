@@ -1,10 +1,10 @@
 ```
-"foo"
+""
 ```
 
-STRING: "\"foo\""
+STRING: "\"\""
     DOUBLEQUOTE: "\""
-    INNERSTRING: "foo"
+    INNERSTRING: ""
     DOUBLEQUOTE: "\""
 
 NO PROBLEMS

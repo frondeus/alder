@@ -2,10 +2,10 @@
 "foo",more
 ```
 
-(String): "\"foo\""
-    (DoubleQuote): "\""
-    (InnerString): "foo"
-    (DoubleQuote): "\""
+STRING: "\"foo\""
+    DOUBLEQUOTE: "\""
+    INNERSTRING: "foo"
+    DOUBLEQUOTE: "\""
 
 REST: ",more"
 NO PROBLEMS

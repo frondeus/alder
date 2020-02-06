@@ -1,0 +1,12 @@
+```
+"foo",more
+```
+
+VALUE: "\"foo\""
+    STRING: "\"foo\""
+        DOUBLEQUOTE: "\""
+        INNERSTRING: "foo"
+        DOUBLEQUOTE: "\""
+
+REST: ",more"
+NO PROBLEMS

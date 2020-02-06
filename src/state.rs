@@ -28,15 +28,9 @@ impl<'a> State<'a> {
         }
     }
 
-    /*
-    pub fn problems(&self) -> &[(dyn Problem, Location<'a>)] {
-        self.problems.as_slice()
+    pub fn fuse_panic(&mut self) {
+        self.panic = false;
     }
-    */
-
-    //pub fn fuse_panic(&mut self) {
-    //self.panic = false;
-    //}
 }
 
 impl<'a> Into<Vec<(Box<dyn Problem + 'a>, Location<'a>)>> for State<'a> {

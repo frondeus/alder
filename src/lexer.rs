@@ -8,6 +8,10 @@ pub enum LexerProblem {
 
     #[error("Unexpected '{0}'")]
     Unexpected(char),
+
+    #[cfg(feature = "with_regex")]
+    #[error("Failed regex")]
+    FailedRegex
 }
 
 pub fn take<'a>(token_kind: NodeKind, len: usize) -> impl Parser<'a, Output = Node<'a>> {
@@ -27,6 +31,23 @@ pub fn take<'a>(token_kind: NodeKind, len: usize) -> impl Parser<'a, Output = No
             let rest = &i[i_len..];
 
             (Node::error(i), rest)
+        }
+    }
+}
+
+#[cfg(feature = "with_regex")]
+pub fn regex<'a>(token_kind: NodeKind, regex: regex::Regex) -> impl Parser<'a, Output = Node<'a>> {
+    move |i: Input<'a>, state: &mut State<'a>| {
+        if let Some(range) = regex.find(i) {
+            let s = range.start();
+            let e = range.end();
+            let output = &i[s..e];
+            let rest = &i[e..];
+            (Node::token(token_kind, output), rest)
+        }
+        else {
+            state.raise(LexerProblem::FailedRegex, i);
+            (Node::error(i), i)
         }
     }
 }
@@ -73,31 +94,58 @@ pub fn chomp_while<'a>(
     }
 }
 
-/*
+pub fn peek_char_2<'a>(f: impl Fn(char)
+    -> Box<dyn Parser<'a, Output = NodeVec<'a>> + 'a>) -> impl Parser<'a, Output = NodeVec<'a>> {
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use test_case::test_case;
-    use crate::Rest;
+    move |i: Input<'a>, state: &mut State<'a>| {
+        let mut end: usize = 0;
+        let i_len = i.chars().take(1)
+            .fold(0, |acc, x| {
+                end += x.len_utf8();
+                acc + 1
+            });
 
-    type Problem<'a> = &'a str;
+        let len = 1;
 
-    fn take_twice<'a>() -> impl Parser<'a, Problem<'a>, Output = StrOutput<'a>> {
-        (
-            take(2, |_| "Expected 2 chars"),
-            take(3, |_| "Expected 3 chars")
-        )
-        .map(|(_a, b)| b)
+        if i_len >= len {
+            let peek = &i[0..end].chars().next().unwrap();
+            let parser = f(*peek);
+            parser.parse_state(i, state)
+        }
+        else {
+            state.raise(LexerProblem::UnexpectedEOF, i);
+            let rest = &i[end..];
+            (NodeVec(vec![]), rest)
+        }
     }
 
-    #[test_case(take(1, |_| "Expected 1 char found EOF"), "ala ma kota" => ("a", "la ma kota"))]
-    #[test_case(take(1, |_| "Expected 1 char found EOF"), "" => panics "Expected 1 char found EOF")]
-    #[test_case(take(3, |_| "Expected 3 chars found only 2"), "ab" => panics "Expected 3 chars found only 2")]
-    #[test_case(take_twice(), "a" => panics "Expected 2 chars at `a`")]
-    fn tests<'a>(parser: impl Parser<'a, Problem<'a>, Output = StrOutput<'a>>, input: Input<'a>) -> (StrOutput<'a>, Rest<'a>) {
-        let res = parser.parse(input).unwrap_display();
-        dbg!(res)
+}
+
+pub fn peek_char<'a>(f: impl Fn(char)
+    -> Box<dyn Parser<'a, Output = Node<'a>> + 'a>) -> impl Parser<'a, Output = Node<'a>> {
+
+    peek(1, move |i| f(i.chars().next().unwrap()))
+}
+
+pub fn peek<'a>(len: usize, f: impl Fn(Input<'a>)
+    -> Box<dyn Parser<'a, Output = Node<'a>> + 'a>) -> impl Parser<'a, Output = Node<'a>> {
+    move |i: Input<'a>, state: &mut State<'a>| {
+        let mut end: usize = 0;
+        let i_len = i.chars().take(len)
+            .fold(0, |acc, x| {
+                end += x.len_utf8();
+                acc + 1
+            });
+
+        if i_len >= len {
+            let peek = &i[0..end];
+            let parser = f(peek);
+            parser.parse_state(i, state)
+        }
+        else {
+            state.raise(LexerProblem::UnexpectedEOF, i);
+            let rest = &i[end..];
+            (Node::error(i), rest)
+        }
     }
 }
-*/
