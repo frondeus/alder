@@ -5,12 +5,14 @@
 }
 ```
 
-VALUE: "{\n"
-    OBJECT: "{\n"
-        OCURLY: "{"
-        ERROR: "\n"
+OBJECT: "{\n"
+    TOKEN: "{"
+    ERROR: "\n"
 
 REST: "    \"foo\": \"bar,\n    \"baz\": 2\n}"
 PROBLEMS:
-* Unexpected '
-' - "\n    \"foo\": \"bar,\n    \"baz\": 2\n}"
+* I expected '}'
+```
+
+
+```

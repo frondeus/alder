@@ -1,0 +1,12 @@
+```
+[true,false]
+```
+
+ARRAY: "[true,false]"
+    TOKEN: "["
+    BOOL: "true"
+    TOKEN: ","
+    BOOL: "false"
+    TOKEN: "]"
+
+NO PROBLEMS

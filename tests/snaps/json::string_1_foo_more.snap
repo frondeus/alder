@@ -3,9 +3,9 @@
 ```
 
 STRING: "\"foo\""
-    DOUBLEQUOTE: "\""
+    TOKEN: "\""
     INNERSTRING: "foo"
-    DOUBLEQUOTE: "\""
+    TOKEN: "\""
 
 REST: ",more"
 NO PROBLEMS

@@ -3,7 +3,7 @@
 ```
 
 OBJECT: "{}"
-    OCURLY: "{"
-    CCURLY: "}"
+    TOKEN: "{"
+    TOKEN: "}"
 
 NO PROBLEMS

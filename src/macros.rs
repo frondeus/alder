@@ -3,7 +3,7 @@
 macro_rules! node_kinds {
     ($name: ident: $first_kind: ident, $($kind: ident),*) => {
         mod counter {
-            pub enum $name { $first_kind = 1, $($kind),* }
+            pub enum $name { $first_kind = 2, $($kind),* }
         }
 
         struct $name;

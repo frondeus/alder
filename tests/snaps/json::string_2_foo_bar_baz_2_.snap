@@ -8,8 +8,11 @@
 STRING: "{\n    \""
     ERROR: "{"
     INNERSTRING: "\n    "
-    DOUBLEQUOTE: "\""
+    TOKEN: "\""
 
 REST: "foo\": \"bar,\n    \"baz\": 2\n}"
 PROBLEMS:
-* Unexpected '{' - "{\n    \"foo\": \"bar,\n    \"baz\": 2\n}"
+* I expected '"'
+```
+{
+```

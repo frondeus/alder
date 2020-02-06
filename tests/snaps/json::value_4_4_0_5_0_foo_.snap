@@ -1,0 +1,21 @@
+```
+[ 4.0, 5.0, "foo" ]
+```
+
+ARRAY: "[ 4.0, 5.0, \"foo\" ]"
+    TOKEN: "["
+    WHITESPACE: " "
+    NUMBER: "4.0"
+    TOKEN: ","
+    WHITESPACE: " "
+    NUMBER: "5.0"
+    TOKEN: ","
+    WHITESPACE: " "
+    STRING: "\"foo\""
+        TOKEN: "\""
+        INNERSTRING: "foo"
+        TOKEN: "\""
+    WHITESPACE: " "
+    TOKEN: "]"
+
+NO PROBLEMS

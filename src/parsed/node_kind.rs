@@ -12,6 +12,7 @@ impl From<u32> for NodeKind {
 #[cfg(not(feature = "debug"))]
 impl NodeKind {
     pub const ERROR: NodeKind = NodeKind(0);
+    pub const TOKEN: NodeKind = NodeKind(1);
 
     pub fn is_error(&self) -> bool {
         *self == Self::ERROR
@@ -32,6 +33,7 @@ impl From<&'static str> for NodeKind {
 #[cfg(feature = "debug")]
 impl NodeKind {
     pub const ERROR: NodeKind = NodeKind("ERROR");
+    pub const TOKEN: NodeKind = NodeKind("TOKEN");
 
     pub fn is_error(&self) -> bool {
         *self == Self::ERROR

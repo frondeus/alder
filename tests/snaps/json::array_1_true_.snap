@@ -1,9 +1,10 @@
 ```
-[]
+[true]
 ```
 
-ARRAY: "[]"
+ARRAY: "[true]"
     TOKEN: "["
+    BOOL: "true"
     TOKEN: "]"
 
 NO PROBLEMS

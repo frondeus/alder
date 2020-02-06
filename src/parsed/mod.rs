@@ -1,14 +1,14 @@
 use crate::*;
 
 #[derive(Debug)]
-pub struct Parsed<'a, T> {
+pub struct Parsed<'a> {
     pub input: Input<'a>,
-    pub root: T,
+    pub root: Node<'a>,
     pub rest: Rest<'a>,
     pub problems: Vec<(Box<dyn Problem + 'a>, Location<'a>)>,
 }
 
-impl<'a, T: Display> Display for Parsed<'a, T> {
+impl<'a> Display for Parsed<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         writeln!(f, "```")?;
         writeln!(f, "{}", self.input)?;
@@ -23,7 +23,10 @@ impl<'a, T: Display> Display for Parsed<'a, T> {
         } else {
             writeln!(f, "PROBLEMS:")?;
             for (p, loc) in self.problems.iter() {
-                writeln!(f, "* {} - {:?}", p, loc)?;
+                writeln!(f, "* {}", p)?;
+                writeln!(f, "```")?;
+                writeln!(f, "{}", loc)?;
+                writeln!(f, "```")?;
             }
         }
         Ok(())
@@ -32,9 +35,7 @@ impl<'a, T: Display> Display for Parsed<'a, T> {
 
 mod node;
 mod node_kind;
-mod node_vec;
 
 pub use self::node::*;
 pub use self::node_kind::*;
-pub use self::node_vec::*;
 use std::fmt::{Display, Error, Formatter};

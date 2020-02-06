@@ -2,11 +2,10 @@
 "foo",more
 ```
 
-VALUE: "\"foo\""
-    STRING: "\"foo\""
-        DOUBLEQUOTE: "\""
-        INNERSTRING: "foo"
-        DOUBLEQUOTE: "\""
+STRING: "\"foo\""
+    TOKEN: "\""
+    INNERSTRING: "foo"
+    TOKEN: "\""
 
 REST: ",more"
 NO PROBLEMS

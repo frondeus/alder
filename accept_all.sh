@@ -18,6 +18,9 @@ for file in $(find . -type f -name "*.new"); do
   if [[ $REPLY =~ ^[Aa]$ ]]
   then
     mv -- "$ACTUAL" "$EXPECTED"
+  elif [[ $REPLY =~ ^[Rr]$ ]]
+  then
+    rm -- "$ACTUAL"
   fi
 done
 echo "All processed"

@@ -1,39 +1,27 @@
 use crate::*;
 
-impl<'a> From<Node<'a>> for NodeVec<'a> {
-    fn from(n: Node<'a>) -> Self {
-        Self(vec![n])
-    }
-}
-
-pub fn node<'a, T: Into<NodeVec<'a>>>(
-    node_kind: NodeKind,
-    parser: impl Parser<'a, Output = T>,
-) -> impl Parser<'a, Output = Node<'a>> {
-    move |i: Input<'a>, state: &mut State<'a>| {
-        let (output, rest) = parser.parse_state(i, state);
-
-        let children: NodeVec = output.into();
-
-        let index = i.offset(rest); //Recognize
-        let node = Node {
-            kind: node_kind,
-            location: &i[..index],
-            children: children.0,
+pub fn node<'a, F>(kind: NodeKind, f: F) -> impl Parser<'a>
+where
+    F: Fn(State<'a>) -> State<'a>,
+{
+    move |mut state: State<'a>| {
+        let n = Node {
+            kind,
+            location: state.input,
+            children: vec![],
         };
-
-        (node, rest)
+        state.nodes.push(n);
+        let mut state = f(state);
+        if let Some(mut n) = state.nodes.pop() {
+            let rest = state.input;
+            let index = n.location.offset(rest);
+            n.location = &n.location[..index];
+            state.add(n);
+        }
+        state
     }
 }
 
-pub fn recognize<'a, T>(node_kind: NodeKind, parser: impl Parser<'a, Output = T>)
--> impl Parser<'a, Output = Node<'a>> {
-    move |i: Input<'a>, state: &mut State<'a>| {
-        let (_, rest) = parser.parse_state(i, state);
-
-        let index = i.offset(rest);
-        let node = Node::token(node_kind, &i[..index]);
-
-        (node, rest)
-    }
+pub fn v_node<'a>(f: impl Fn(State<'a>) -> State<'a>) -> impl Parser<'a> {
+    move |vstate: State<'a>| f(vstate)
 }

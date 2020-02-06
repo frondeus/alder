@@ -49,7 +49,7 @@ impl TestCase {
 pub fn alder(_args: TokenStream, input: TokenStream) -> TokenStream {
     let mut item = parse_macro_input!(input as ItemFn);
 
-    let opt: ItemFn = parse_quote! { fn foo<'a>() -> impl Parser<'a, Output = Node<'a>> {} };
+    let opt: ItemFn = parse_quote! { fn foo<'a>() -> impl Parser<'a> {} };
     item.sig.output = opt.sig.output;
     item.sig.generics = opt.sig.generics;
 

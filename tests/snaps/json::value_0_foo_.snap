@@ -2,10 +2,9 @@
 "foo"
 ```
 
-VALUE: "\"foo\""
-    STRING: "\"foo\""
-        DOUBLEQUOTE: "\""
-        INNERSTRING: "foo"
-        DOUBLEQUOTE: "\""
+STRING: "\"foo\""
+    TOKEN: "\""
+    INNERSTRING: "foo"
+    TOKEN: "\""
 
 NO PROBLEMS

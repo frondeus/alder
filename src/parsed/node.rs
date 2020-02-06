@@ -36,9 +36,9 @@ impl<'a> Display for Node<'a> {
         if width > 0 {
             write!(f, "{:width$}", " ", width = width)?;
         }
-        #[cfg(not(feature="debug"))]
+        #[cfg(not(feature = "debug"))]
         write!(f, "{}", self.kind.0)?;
-        #[cfg(feature="debug")]
+        #[cfg(feature = "debug")]
         write!(f, "{}", self.kind.0.to_uppercase())?;
 
         write!(f, ": ")?;

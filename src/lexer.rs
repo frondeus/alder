@@ -6,79 +6,69 @@ pub enum LexerProblem {
     #[error("Unexpected EOF")]
     UnexpectedEOF,
 
-    #[error("Unexpected '{0}'")]
-    Unexpected(char),
+    #[error("I expected '{0}'")]
+    ExpectedTag(&'static str),
+
+    #[error("I expected '{0}'")]
+    ExpectedToken(char),
 
     #[cfg(feature = "with_regex")]
     #[error("Failed regex")]
-    FailedRegex
+    FailedRegex,
 }
 
-pub fn take<'a>(token_kind: NodeKind, len: usize) -> impl Parser<'a, Output = Node<'a>> {
-    move |i: Input<'a>, state: &mut State<'a>| {
-        let i_len = i.len();
-        if i_len >= len {
-            //We want to take n chars not n bytes.
-            let mut end: usize = 0;
-            i.chars().take(len).for_each(|x| end += x.len_utf8());
-
-            let output = &i[0..end];
-            let rest = &i[end..];
-
-            (Node::token(token_kind, output), rest)
-        } else {
-            state.raise(LexerProblem::UnexpectedEOF, i);
-            let rest = &i[i_len..];
-
-            (Node::error(i), rest)
-        }
-    }
-}
-
-#[cfg(feature = "with_regex")]
-pub fn regex<'a>(token_kind: NodeKind, regex: regex::Regex) -> impl Parser<'a, Output = Node<'a>> {
-    move |i: Input<'a>, state: &mut State<'a>| {
-        if let Some(range) = regex.find(i) {
-            let s = range.start();
-            let e = range.end();
-            let output = &i[s..e];
-            let rest = &i[e..];
-            (Node::token(token_kind, output), rest)
-        }
-        else {
-            state.raise(LexerProblem::FailedRegex, i);
-            (Node::error(i), i)
-        }
-    }
-}
-
-pub fn token<'a>(token_kind: NodeKind, expected: char) -> impl Parser<'a, Output = Node<'a>> {
-    let parser = take(token_kind, 1);
-    move |i: Input<'a>, state: &mut State<'a>| {
-        let (first, rest) = parser.parse_state(i, state);
-        if !first.is_error() {
-            let s = first.location;
-            match s.chars().next() {
-                Some(letter) if letter != expected => {
-                    state.raise(LexerProblem::Unexpected(letter), i);
-                    return (Node::error(s), rest);
-                }
-                _ => (),
+pub fn tag<'a>(kind: NodeKind, tag: &'static str) -> impl Parser<'a> {
+    move |mut state: State<'a>| {
+        let size = tag.len();
+        let i_size = state.input.len();
+        if i_size >= size {
+            let t = &state.input[..size];
+            if t == tag {
+                let node = Node::token(kind, state.chomp(size));
+                state.add(node);
+                return state;
+            } else {
+                return state.raise(LexerProblem::ExpectedTag(tag), t);
             }
         }
-
-        (first, rest)
+        let input = state.input;
+        state.raise(LexerProblem::ExpectedTag(tag), input)
     }
 }
 
-pub fn chomp_while<'a>(
-    token_kind: NodeKind,
-    f: impl Fn(char) -> bool,
-) -> impl Parser<'a, Output = Node<'a>> {
-    move |i: &'a str, _state: &mut State<'a>| {
+impl<'a> Parser<'a> for char
+{
+    fn parse_state(&self, state: State<'a>) -> State<'a> {
+        token(*self).parse_state(state)
+    }
+}
+
+pub fn token<'a>(token: char) -> impl Parser<'a> {
+    move |mut state: State<'a>| {
+        let next = state.input.chars().next();
+        match next {
+            Some(n) if n == token => {
+                let node = Node::token(NodeKind::TOKEN, state.chomp(n.len_utf8()));
+                state.add(node);
+                state
+            }
+            Some(n) => {
+                let loc = state.chomp(n.len_utf8());
+                state.raise(LexerProblem::ExpectedToken(token), loc)
+            }
+            None => {
+                let loc = state.chomp(0);
+                state.raise(LexerProblem::ExpectedToken(token), loc)
+            }
+        }
+    }
+}
+
+pub fn chomp_while<'a>(token_kind: NodeKind, f: impl Fn(char) -> bool) -> impl Parser<'a> {
+    move |mut state: State<'a>| {
         let mut len = 0;
         loop {
-            let c = &i[len..].chars().next();
+            let c = &state.input[len..].chars().next();
             match c {
                 Some(letter) if f(*letter) => {
                     len += letter.len_utf8();
@@ -87,65 +77,30 @@ pub fn chomp_while<'a>(
             }
         }
 
-        let result = &i[0..len];
-        let rest = &i[len..];
+        if len != 0 {
 
-        (Node::token(token_kind, result), rest)
+        let result = state.chomp(len);
+
+        let node = Node::token(token_kind, result);
+        state.add(node);
+        }
+        state
     }
 }
 
-pub fn peek_char_2<'a>(f: impl Fn(char)
-    -> Box<dyn Parser<'a, Output = NodeVec<'a>> + 'a>) -> impl Parser<'a, Output = NodeVec<'a>> {
-
-    move |i: Input<'a>, state: &mut State<'a>| {
-        let mut end: usize = 0;
-        let i_len = i.chars().take(1)
-            .fold(0, |acc, x| {
-                end += x.len_utf8();
-                acc + 1
-            });
-
-        let len = 1;
-
-        if i_len >= len {
-            let peek = &i[0..end].chars().next().unwrap();
-            let parser = f(*peek);
-            parser.parse_state(i, state)
+#[cfg(feature = "with_regex")]
+pub fn regex<'a>(token_kind: NodeKind, regex: regex::Regex) -> impl Parser<'a> {
+    move |mut state: State<'a>| {
+        if let Some(range) = regex.find(state.input) {
+            let e = range.end();
+            let output = state.chomp(e);
+            let node = Node::token(token_kind, output);
+            state.add(node);
+            state
         }
         else {
-            state.raise(LexerProblem::UnexpectedEOF, i);
-            let rest = &i[end..];
-            (NodeVec(vec![]), rest)
-        }
-    }
-
-}
-
-pub fn peek_char<'a>(f: impl Fn(char)
-    -> Box<dyn Parser<'a, Output = Node<'a>> + 'a>) -> impl Parser<'a, Output = Node<'a>> {
-
-    peek(1, move |i| f(i.chars().next().unwrap()))
-}
-
-pub fn peek<'a>(len: usize, f: impl Fn(Input<'a>)
-    -> Box<dyn Parser<'a, Output = Node<'a>> + 'a>) -> impl Parser<'a, Output = Node<'a>> {
-    move |i: Input<'a>, state: &mut State<'a>| {
-        let mut end: usize = 0;
-        let i_len = i.chars().take(len)
-            .fold(0, |acc, x| {
-                end += x.len_utf8();
-                acc + 1
-            });
-
-        if i_len >= len {
-            let peek = &i[0..end];
-            let parser = f(peek);
-            parser.parse_state(i, state)
-        }
-        else {
-            state.raise(LexerProblem::UnexpectedEOF, i);
-            let rest = &i[end..];
-            (Node::error(i), rest)
+            let loc = state.chomp(0);
+            state.raise(LexerProblem::FailedRegex, loc)
         }
     }
 }

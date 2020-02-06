@@ -3,8 +3,7 @@
 ```
 
 STRING: "\"\""
-    DOUBLEQUOTE: "\""
-    INNERSTRING: ""
-    DOUBLEQUOTE: "\""
+    TOKEN: "\""
+    TOKEN: "\""
 
 NO PROBLEMS
