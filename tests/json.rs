@@ -16,7 +16,11 @@ node_kinds! {
         Array,
         Object,
         Number,
-        Bool
+        Bool,
+
+        // Fields
+        ObjKey,
+        ObjValue
 }
 
 #[alder]
@@ -28,7 +32,9 @@ fn is_newline_or_eof(c: char) -> bool {
     c == '\n' || c == '\r'
 }
 
-fn is_not_newline_or_eof(c: char) -> bool { !is_newline_or_eof(c) }
+fn is_not_newline_or_eof(c: char) -> bool {
+    !is_newline_or_eof(c)
+}
 
 /// //foo
 /**
@@ -44,14 +50,16 @@ fn is_not_newline_or_eof(c: char) -> bool { !is_newline_or_eof(c) }
 */
 #[alder]
 fn comment() -> impl Parser {
-    v_node(|s| s.peek(|c, s| match c {
-        Some('/') => s.peek_nth(1, |c, s| match c {
-            Some('/') => s.parse(chomp_while(Json::InlineComment, is_not_newline_or_eof)),
-            Some('*') => s.parse(out_comment()),
-            _ => s.skip()
-        }),
-        _ => s.skip()
-    }))
+    v_node(|s| {
+        s.peek(|c, s| match c {
+            Some('/') => s.peek_nth(1, |c, s| match c {
+                Some('/') => s.parse(chomp_while(Json::InlineComment, is_not_newline_or_eof)),
+                Some('*') => s.parse(out_comment()),
+                _ => s.skip(),
+            }),
+            _ => s.skip(),
+        })
+    })
 }
 
 #[alder]
@@ -63,10 +71,10 @@ fn out_comment() -> impl Parser {
                     Some('/') => {
                         *end = true;
                         s.consume(2)
-                    },
-                    _ => s.consume(1)
+                    }
+                    _ => s.consume(1),
                 }),
-                _ => s.consume(1)
+                _ => s.consume(1),
             })
         }))
     })
@@ -82,8 +90,8 @@ fn out_comment() -> impl Parser {
 */
 #[alder]
 fn extras() -> impl Parser {
-    v_node(|s| s.parse(
-        repeat(|s, end| {
+    v_node(|s| {
+        s.parse(repeat(|s, end| {
             s.peek(|c, s| match c {
                 Some(c) if c.is_whitespace() => s.parse(ws()),
                 Some('/') => s.parse(comment()),
@@ -93,7 +101,7 @@ fn extras() -> impl Parser {
                 }
             })
         }))
-    )
+    })
 }
 
 /// "foo"
@@ -112,37 +120,37 @@ fn extras() -> impl Parser {
 */
 #[alder]
 fn value() -> impl Parser {
-    v_node(|s| s
-        .parse(extras())
-        .peek(|c, s| match c {
-            None => todo!("value"),
-            Some(c) => match c {
-                't' | 'f' => s.parse(boolean()),
-                '[' => s.parse(array()),
-                '{' => s.parse(object()),
-                '-' | '.' | '0'..='9' => s.parse(number()),
-                '"' => s.parse(string()),
-                c => {
-                    dbg!(&s);
-                    todo!("{:?}", c)
+    v_node(|s| {
+        s.parse(extras())
+            .peek(|c, s| match c {
+                None => todo!("value"),
+                Some(c) => match c {
+                    't' | 'f' => s.parse(boolean()),
+                    '[' => s.parse(array()),
+                    '{' => s.parse(object()),
+                    '-' | '.' | '0'..='9' => s.parse(number()),
+                    '"' => s.parse(string()),
+                    c => {
+                        dbg!(&s);
+                        todo!("{:?}", c)
+                    }
                 },
-            },
-        })
-        .parse(extras())
-    )
+            })
+            .parse(extras())
+    })
 }
 
 /// true
 /// false
 #[alder]
 fn boolean() -> impl Parser {
-    v_node(|s| s
-        .peek(|c, s| match c {
+    v_node(|s| {
+        s.peek(|c, s| match c {
             Some('t') => s.parse(tag(Json::Bool, "true")),
             Some('f') => s.parse(tag(Json::Bool, "false")),
             _ => todo!("bool"),
         })
-    )
+    })
 }
 
 /// []
@@ -154,24 +162,22 @@ fn boolean() -> impl Parser {
 /// [ true , false ]
 #[alder]
 fn array() -> impl Parser {
-    node(Json::Array, |s| s
-        .parse('[')
-        .peek(|c, s| match c {
-            None => todo!("array"),
-            Some(']') => s.skip(),
-            _ => s.parse(inner_array())
-        })
-        .parse(']')
-    )
+    node(Json::Array, |s| {
+        s.parse('[')
+            .peek(|c, s| match c {
+                None => todo!("array"),
+                Some(']') => s.skip(),
+                _ => s.parse(inner_array()),
+            })
+            .parse(']')
+    })
 }
 
 #[alder]
 fn inner_array() -> impl Parser {
     v_node(|s| {
-        s.parse(repeat(|s, end| s
-            .parse(value())
-            .parse(extras())
-            .peek(|c, s| match c {
+        s.parse(repeat(|s, end| {
+            s.parse(value()).peek(|c, s| match c {
                 None => todo!("inner_array"),
                 Some(']') => {
                     *end = true;
@@ -179,17 +185,51 @@ fn inner_array() -> impl Parser {
                 }
                 _ => s.parse(','),
             })
-        ))
+        }))
     })
 }
 
 /// {}
+/// { "foo": true }
+/**
+    {
+        "foo": true, // Here sth
+        "bar": "false"   // Here not sth
+    }
+*/
 #[alder]
 fn object() -> impl Parser {
-    node(Json::Object, |s| s
-        .parse('{')
-        .parse('}')
-    )
+    node(Json::Object, |s| {
+        s.parse('{')
+            .peek(|c, s| match c {
+                None => todo!("obj"),
+                Some('}') => s.skip(),
+                _ => s.parse(inner_object()),
+            })
+            .parse('}')
+    })
+}
+
+#[alder]
+fn inner_object() -> impl Parser {
+    v_node(|s| {
+        s.parse(repeat(|s, end| {
+            s.parse(extras())
+                .parse(alias(Json::ObjKey, string()))
+                //.parse(string())
+                .parse(extras())
+                .parse(':')
+                .parse(value())
+                .peek(|c, s| match c {
+                    None => todo!("inner_obj"),
+                    Some('}') => {
+                        *end = true;
+                        s.skip()
+                    }
+                    _ => s.parse(','),
+                })
+        }))
+    })
 }
 
 /// 5.0
@@ -221,13 +261,13 @@ fn number() -> impl Parser {
 /// ""
 #[alder]
 fn string() -> impl Parser {
-    node(Json::String, |s| s
-        .parse('"')
-        .peek(|c, s| match c {
-            None => todo!("string"),
-            Some('"') => s,
-            _ => s.parse(chomp_while(Json::InnerString, |c| c != '"')),
-        })
-        .parse('"')
-    )
+    node(Json::String, |s| {
+        s.parse('"')
+            .peek(|c, s| match c {
+                None => todo!("string"),
+                Some('"') => s,
+                _ => s.parse(chomp_while(Json::InnerString, |c| c != '"')),
+            })
+            .parse('"')
+    })
 }

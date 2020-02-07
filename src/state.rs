@@ -9,6 +9,7 @@ impl<E> Problem for E where E: Display + Debug {}
 pub struct State<'a> {
     pub(crate) input: Input<'a>,
     pub(crate) nodes: Vec<Node<'a>>,
+    aliases: Vec<NodeKind>,
     problems: Vec<(Box<dyn Problem + 'a>, Location<'a>)>,
     panic: bool,
 }
@@ -19,6 +20,14 @@ impl<'a> State<'a> {
         self.panic = true;
         self.add(Node::error(loc));
         self
+    }
+
+    pub fn push_alias(&mut self, alias: NodeKind) {
+        self.aliases.push(alias);
+    }
+
+    pub fn pop_alias(&mut self) {
+        self.aliases.pop();
     }
 
     pub fn fuse(&mut self) {
@@ -40,8 +49,15 @@ impl<'a> State<'a> {
         self
     }
 
-    pub fn add(&mut self, node: Node<'a>) {
-        if let Some(r @ Node { expect_children: true, .. }) = self.node() {
+    pub fn add(&mut self, mut node: Node<'a>) {
+        node.aliases.extend(self.aliases.iter().cloned());
+        if let Some(
+            r @ Node {
+                expect_children: true,
+                ..
+            },
+        ) = self.node()
+        {
             r.children.push(node);
         } else {
             self.nodes.push(node);
@@ -74,6 +90,7 @@ impl<'a> From<Input<'a>> for State<'a> {
             panic: false,
             problems: vec![],
             nodes: vec![],
+            aliases: vec![],
         }
     }
 }

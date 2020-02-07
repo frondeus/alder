@@ -4,15 +4,17 @@ use std::fmt::{Display, Error, Formatter};
 #[derive(Debug, Clone)]
 pub struct Node<'a> {
     pub kind: NodeKind,
+    pub aliases: Vec<NodeKind>, // One node can have more than one kind
     pub location: Location<'a>,
     pub children: Vec<Node<'a>>,
-    pub(crate) expect_children: bool
+    pub(crate) expect_children: bool,
 }
 
 impl<'a> Node<'a> {
     pub fn error(location: Location<'a>) -> Self {
         Self {
             kind: NodeKind::ERROR,
+            aliases: vec![],
             location,
             children: vec![],
             expect_children: false,
@@ -22,9 +24,10 @@ impl<'a> Node<'a> {
     pub fn token(kind: NodeKind, location: Location<'a>) -> Self {
         Self {
             kind,
+            aliases: vec![],
             location,
             children: vec![],
-            expect_children: false
+            expect_children: false,
         }
     }
 
@@ -47,6 +50,17 @@ impl<'a> Display for Node<'a> {
         write!(f, "{}", self.kind.0)?;
         #[cfg(feature = "debug")]
         write!(f, "{}", self.kind.0.to_uppercase())?;
+
+        if !self.aliases.is_empty() {
+            write!(f, " (")?;
+            for alias in self.aliases.iter() {
+                #[cfg(not(feature = "debug"))]
+                write!(f, "{}", alias.0)?;
+                #[cfg(feature = "debug")]
+                write!(f, "{}", alias.0.to_uppercase())?;
+            }
+            write!(f, ")")?;
+        }
 
         write!(f, ": ")?;
         writeln!(f, "{:?}", self.location)?;

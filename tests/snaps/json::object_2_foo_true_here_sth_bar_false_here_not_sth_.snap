@@ -1,0 +1,37 @@
+```
+{
+    "foo": true, // Here sth
+    "bar": "false"   // Here not sth
+}
+```
+
+OBJECT: "{\n    \"foo\": true, // Here sth\n    \"bar\": \"false\"   // Here not sth\n}"
+    TOKEN: "{"
+    WHITESPACE: "\n    "
+    STRING (OBJKEY): "\"foo\""
+        TOKEN (OBJKEY): "\""
+        INNERSTRING (OBJKEY): "foo"
+        TOKEN (OBJKEY): "\""
+    TOKEN: ":"
+    WHITESPACE: " "
+    BOOL: "true"
+    TOKEN: ","
+    WHITESPACE: " "
+    INLINECOMMENT: "// Here sth"
+    WHITESPACE: "\n    "
+    STRING (OBJKEY): "\"bar\""
+        TOKEN (OBJKEY): "\""
+        INNERSTRING (OBJKEY): "bar"
+        TOKEN (OBJKEY): "\""
+    TOKEN: ":"
+    WHITESPACE: " "
+    STRING: "\"false\""
+        TOKEN: "\""
+        INNERSTRING: "false"
+        TOKEN: "\""
+    WHITESPACE: "   "
+    INLINECOMMENT: "// Here not sth"
+    WHITESPACE: "\n"
+    TOKEN: "}"
+
+NO PROBLEMS

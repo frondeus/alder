@@ -5,15 +5,36 @@
 }
 ```
 
-OBJECT: "{\n"
+OBJECT: "{\n    \"foo\": \"bar,\n    \"baz\": 2\n}"
     TOKEN: "{"
-    ERROR: "\n"
-WHITESPACE: "    "
+    WHITESPACE: "\n    "
+    STRING (OBJKEY): "\"foo\""
+        TOKEN (OBJKEY): "\""
+        INNERSTRING (OBJKEY): "foo"
+        TOKEN (OBJKEY): "\""
+    TOKEN: ":"
+    WHITESPACE: " "
+    STRING: "\"bar,\n    \""
+        TOKEN: "\""
+        INNERSTRING: "bar,\n    "
+        TOKEN: "\""
+    ERROR: "b"
+    STRING (OBJKEY): "az\""
+        ERROR (OBJKEY): "a"
+        INNERSTRING (OBJKEY): "z"
+        TOKEN (OBJKEY): "\""
+    TOKEN: ":"
+    WHITESPACE: " "
+    NUMBER: "2"
+    WHITESPACE: "\n"
+    TOKEN: "}"
 
-REST: "\"foo\": \"bar,\n    \"baz\": 2\n}"
 PROBLEMS:
-* I expected '}'
+* I expected ','
 ```
-
-
+b
+```
+* I expected '"'
+```
+a
 ```

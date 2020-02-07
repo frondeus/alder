@@ -1,0 +1,18 @@
+```
+{ "foo": true }
+```
+
+OBJECT: "{ \"foo\": true }"
+    TOKEN: "{"
+    WHITESPACE: " "
+    STRING (OBJKEY): "\"foo\""
+        TOKEN (OBJKEY): "\""
+        INNERSTRING (OBJKEY): "foo"
+        TOKEN (OBJKEY): "\""
+    TOKEN: ":"
+    WHITESPACE: " "
+    BOOL: "true"
+    WHITESPACE: " "
+    TOKEN: "}"
+
+NO PROBLEMS

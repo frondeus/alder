@@ -36,8 +36,7 @@ pub fn tag<'a>(kind: NodeKind, tag: &'static str) -> impl Parser<'a> {
     }
 }
 
-impl<'a> Parser<'a> for char
-{
+impl<'a> Parser<'a> for char {
     fn parse_state(&self, state: State<'a>) -> State<'a> {
         token(*self).parse_state(state)
     }
@@ -78,11 +77,10 @@ pub fn chomp_while<'a>(token_kind: NodeKind, f: impl Fn(char) -> bool) -> impl P
         }
 
         if len != 0 {
+            let result = state.chomp(len);
 
-        let result = state.chomp(len);
-
-        let node = Node::token(token_kind, result);
-        state.add(node);
+            let node = Node::token(token_kind, result);
+            state.add(node);
         }
         state
     }
@@ -97,8 +95,7 @@ pub fn regex<'a>(token_kind: NodeKind, regex: regex::Regex) -> impl Parser<'a> {
             let node = Node::token(token_kind, output);
             state.add(node);
             state
-        }
-        else {
+        } else {
             let loc = state.chomp(0);
             state.raise(LexerProblem::FailedRegex, loc)
         }
