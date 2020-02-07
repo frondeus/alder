@@ -1,0 +1,8 @@
+```
+/* Outline comment */ not a comment
+```
+
+OUTLINECOMMENT: "/* Outline comment */"
+
+REST: " not a comment"
+NO PROBLEMS

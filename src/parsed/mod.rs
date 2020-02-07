@@ -3,7 +3,7 @@ use crate::*;
 #[derive(Debug)]
 pub struct Parsed<'a> {
     pub input: Input<'a>,
-    pub root: Node<'a>,
+    pub roots: Vec<Node<'a>>,
     pub rest: Rest<'a>,
     pub problems: Vec<(Box<dyn Problem + 'a>, Location<'a>)>,
 }
@@ -14,7 +14,10 @@ impl<'a> Display for Parsed<'a> {
         writeln!(f, "{}", self.input)?;
         writeln!(f, "```")?;
         writeln!(f)?;
-        writeln!(f, "{}", self.root)?;
+        for root in self.roots.iter() {
+            write!(f, "{}", root)?;
+        }
+        writeln!(f)?;
         if !self.rest.is_empty() {
             writeln!(f, "REST: {:?}", self.rest)?;
         }

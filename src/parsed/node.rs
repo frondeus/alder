@@ -6,6 +6,7 @@ pub struct Node<'a> {
     pub kind: NodeKind,
     pub location: Location<'a>,
     pub children: Vec<Node<'a>>,
+    pub(crate) expect_children: bool
 }
 
 impl<'a> Node<'a> {
@@ -14,6 +15,7 @@ impl<'a> Node<'a> {
             kind: NodeKind::ERROR,
             location,
             children: vec![],
+            expect_children: false,
         }
     }
 
@@ -22,11 +24,16 @@ impl<'a> Node<'a> {
             kind,
             location,
             children: vec![],
+            expect_children: false
         }
     }
 
     pub fn is_error(&self) -> bool {
         self.kind.is_error()
+    }
+
+    pub fn expect_children(&self) -> bool {
+        self.expect_children
     }
 }
 

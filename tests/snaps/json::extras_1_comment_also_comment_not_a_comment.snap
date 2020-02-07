@@ -1,0 +1,15 @@
+```
+//comment
+// also comment
+
+
+            not a comment
+```
+
+INLINECOMMENT: "//comment"
+WHITESPACE: "\n"
+INLINECOMMENT: "// also comment"
+WHITESPACE: "\n\n\n            "
+
+REST: "not a comment"
+NO PROBLEMS

@@ -1,0 +1,9 @@
+```
+//foo bar baz
+not foo
+```
+
+INLINECOMMENT: "//foo bar baz"
+
+REST: "\nnot foo"
+NO PROBLEMS

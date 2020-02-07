@@ -1,0 +1,12 @@
+```
+// comment
+5.0 // comment 2
+```
+
+INLINECOMMENT: "// comment"
+WHITESPACE: "\n"
+NUMBER: "5.0"
+WHITESPACE: " "
+INLINECOMMENT: "// comment 2"
+
+NO PROBLEMS

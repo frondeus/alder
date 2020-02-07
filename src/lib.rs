@@ -31,11 +31,11 @@ pub trait Parser<'a> {
         let state = input.into();
         let mut state = self.parse_state(state);
         let rest = state.input;
-        let root = state.nodes.pop().unwrap();
+        let roots = state.nodes.drain(..).collect();
 
         Parsed {
             input,
-            root,
+            roots,
             rest,
             problems: state.into(),
         }

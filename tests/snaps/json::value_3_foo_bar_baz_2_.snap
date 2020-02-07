@@ -8,8 +8,9 @@
 OBJECT: "{\n"
     TOKEN: "{"
     ERROR: "\n"
+WHITESPACE: "    "
 
-REST: "    \"foo\": \"bar,\n    \"baz\": 2\n}"
+REST: "\"foo\": \"bar,\n    \"baz\": 2\n}"
 PROBLEMS:
 * I expected '}'
 ```

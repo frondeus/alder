@@ -3,6 +3,8 @@
 macro_rules! node_kinds {
     ($name: ident: $first_kind: ident, $($kind: ident),*) => {
         mod counter {
+            // 0 = error
+            // 1 = token
             pub enum $name { $first_kind = 2, $($kind),* }
         }
 

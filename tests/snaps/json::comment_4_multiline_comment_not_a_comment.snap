@@ -1,0 +1,10 @@
+```
+/* Multiline
+comment
+*/ not a comment
+```
+
+OUTLINECOMMENT: "/* Multiline\ncomment\n*/"
+
+REST: " not a comment"
+NO PROBLEMS

@@ -35,8 +35,13 @@ impl<'a> State<'a> {
         chomped
     }
 
+    pub fn consume(mut self, len: usize) -> Self {
+        self.chomp(len);
+        self
+    }
+
     pub fn add(&mut self, node: Node<'a>) {
-        if let Some(r) = self.node() {
+        if let Some(r @ Node { expect_children: true, .. }) = self.node() {
             r.children.push(node);
         } else {
             self.nodes.push(node);
@@ -45,6 +50,11 @@ impl<'a> State<'a> {
 
     pub fn peek(self, mut f: impl FnMut(Option<char>, Self) -> Self) -> Self {
         let c = self.input.chars().next();
+        f(c, self)
+    }
+
+    pub fn peek_nth(self, nth: usize, mut f: impl FnMut(Option<char>, Self) -> Self) -> Self {
+        let c = self.input.chars().nth(nth);
         f(c, self)
     }
 
