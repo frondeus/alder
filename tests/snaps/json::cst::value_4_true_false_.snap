@@ -1,0 +1,16 @@
+```
+[ true , false ]
+```
+
+ARRAY (VALUE): "[ true , false ]"(0, 15)
+    TOKEN: "["(0, 0)
+    WS (EXTRA): " "(1, 1)
+    TOKEN (BOOLEAN VALUE): "true"(2, 5)
+    WS (EXTRA): " "(6, 6)
+    TOKEN: ","(7, 7)
+    WS (EXTRA): " "(8, 8)
+    TOKEN (BOOLEAN VALUE): "false"(9, 13)
+    WS (EXTRA): " "(14, 14)
+    TOKEN: "]"(15, 15)
+
+NO PROBLEMS
