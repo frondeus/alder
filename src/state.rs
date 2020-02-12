@@ -38,7 +38,7 @@ impl State {
             input: input.into(),
             rest: state.input,
             nodes,
-            problems: vec![] //TODO
+            problems: vec![], //TODO
         }
     }
 

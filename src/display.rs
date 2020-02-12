@@ -1,5 +1,5 @@
+use crate::{Input, Node, Parsed};
 use std::fmt::{Display, Error, Formatter};
-use crate::{Parsed, Input, Node};
 
 impl Display for Input {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -18,7 +18,15 @@ impl Display for Node {
 
         if !self.alias.is_empty() {
             write!(f, " (")?;
-            write!(f, "{}", self.alias.iter().map(|alias| alias.0.to_uppercase()).collect::<Vec<_>>().join(" "))?;
+            write!(
+                f,
+                "{}",
+                self.alias
+                    .iter()
+                    .map(|alias| alias.0.to_uppercase())
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            )?;
             write!(f, ")")?;
         }
 
@@ -59,4 +67,3 @@ impl Display for Parsed {
         Ok(())
     }
 }
-

@@ -8,5 +8,5 @@ pub struct Parsed {
     pub input: Input,
     pub rest: Input,
     pub nodes: Vec<Node>,
-    pub problems: Vec<(Box<dyn Problem>, Input)>
+    pub problems: Vec<(Box<dyn Problem>, Input)>,
 }
