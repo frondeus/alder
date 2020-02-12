@@ -11,7 +11,7 @@ impl NodeId {
     pub const VIRTUAL: Self = NodeId("VIRTUAL");
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Node {
     pub name: NodeId,
     pub alias: Vec<NodeId>,

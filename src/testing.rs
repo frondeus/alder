@@ -1,4 +1,3 @@
-
 pub fn snap(actual_debug: String, module: &str, test_case_name: &str) {
     println!("{}", actual_debug);
 
@@ -30,4 +29,3 @@ pub fn snap(actual_debug: String, module: &str, test_case_name: &str) {
         }
     }
 }
-

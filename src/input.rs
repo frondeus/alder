@@ -50,8 +50,9 @@ impl Input {
     pub fn len(&self) -> usize {
         if self.range.1 >= self.range.0 {
             self.range.1 - self.range.0 + 1
+        } else {
+            0
         }
-        else { 0 }
     }
 
     pub fn is_empty(&self) -> bool {
