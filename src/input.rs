@@ -1,7 +1,7 @@
 use crate::*;
 use std::sync::Arc;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Input {
     src: Arc<str>,
     pub(crate) range: (usize, usize), // from, to
