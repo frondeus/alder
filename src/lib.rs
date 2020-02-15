@@ -11,6 +11,8 @@ mod state;
 #[macro_use]
 mod macros;
 
+mod ast;
+
 pub mod testing;
 
 pub use input::*;
@@ -21,3 +23,4 @@ pub use parsed::*;
 pub use parser::*;
 pub use parsers::*;
 pub use state::*;
+pub use ast::*;

@@ -1,6 +1,6 @@
 use crate::*;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash, PartialOrd, Ord)]
 pub struct NodeId(pub &'static str);
 
 impl NodeId {
@@ -11,12 +11,19 @@ impl NodeId {
     pub const VIRTUAL: Self = NodeId("VIRTUAL");
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq)]
 pub struct Node {
     pub name: NodeId,
     pub alias: Vec<NodeId>,
     pub span: Input,
     pub children: Vec<Node>,
+}
+
+impl Node {
+    pub fn iter(&self) -> impl Iterator<Item = &Node> {
+        std::iter::once(self)
+            .chain(self.children.iter())
+    }
 }
 
 impl Node {
