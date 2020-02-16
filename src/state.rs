@@ -7,6 +7,8 @@ pub struct State {
     pub nodes: Vec<Node>,
     extras: Vec<Option<Arc<dyn Parser>>>,
     parsing_extra: bool,
+    pub(crate) problems: Vec<(Box<dyn Problem + 'static>, Input)>,
+    pub(crate) panic: bool
 }
 
 impl Debug for State {
@@ -24,13 +26,15 @@ impl<'a> From<&'a str> for State {
             input: input.clone(),
             nodes: vec![Node::root(input)],
             extras: vec![],
+            problems: vec![],
             parsing_extra: false,
+            panic: false
         }
     }
 }
 
 impl State {
-    pub fn parse(input: &str, parser: impl Parser) -> Parsed {
+    pub fn parse(input: &str, parser: impl Parser ) -> Parsed {
         let mut state = Self::from(input);
         state.add(parser);
         let nodes = state.nodes.pop().expect("At least root").children;
@@ -38,7 +42,7 @@ impl State {
             input: input.into(),
             rest: state.input,
             nodes,
-            problems: vec![], //TODO
+            problems: state.problems,
         }
     }
 
@@ -83,6 +87,20 @@ impl State {
         }
 
         parent.children.push(node);
+    }
+
+    pub (crate) fn last_error(&mut self) -> Option<&mut Node> {
+        self.node()
+            .and_then(|root| root.children.last_mut())
+            .and_then(|node| {
+                if node.is(NodeId::ERROR) { Some(node) }
+                else { None }
+            })
+    }
+
+    pub (crate) fn pop_node(&mut self) -> Option<Node> {
+        self.node()
+            .and_then(|root| root.children.pop())
     }
 }
 

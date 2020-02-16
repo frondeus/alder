@@ -1,0 +1,30 @@
+```
+{
+    "true": false,
+    "false": true
+}
+```
+
+OBJECT (VALUE): "{\n    \"true\": false,\n    \"false\": true\n}"(0, 40)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): "\n    "(1, 5)
+    STRING (KEY): "\"true\""(6, 6)
+        TOKEN: "\""(6, 1)
+        VALUE: "true"(7, 4)
+        TOKEN: "\""(11, 1)
+    TOKEN: ":"(12, 1)
+    WS (EXTRA): " "(13, 1)
+    TOKEN (BOOLEAN VALUE): "false"(14, 5)
+    TOKEN: ","(19, 1)
+    WS (EXTRA): "\n    "(20, 5)
+    STRING (KEY): "\"false\""(25, 7)
+        TOKEN: "\""(25, 1)
+        VALUE: "false"(26, 5)
+        TOKEN: "\""(31, 1)
+    TOKEN: ":"(32, 1)
+    WS (EXTRA): " "(33, 1)
+    TOKEN (BOOLEAN VALUE): "true"(34, 4)
+    WS (EXTRA): "\n"(38, 1)
+    TOKEN: "}"(39, 1)
+
+NO PROBLEMS

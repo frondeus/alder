@@ -4,7 +4,7 @@ use std::sync::Arc;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Input {
     src: Arc<str>,
-    pub(crate) range: (usize, usize), // from, to
+    pub(crate) range: (usize, usize), // pos, len
 }
 
 impl std::fmt::Debug for Input {
@@ -15,18 +15,10 @@ impl std::fmt::Debug for Input {
     }
 }
 
-//#[cfg(test)] TODO
-impl Input {
-    pub fn new_test(src: &str, range: (usize, usize)) -> Self {
-        let src = src.into();
-        Self { src, range }
-    }
-}
-
 impl<'a> From<&'a str> for Input {
     fn from(input: &'a str) -> Input {
         let src: Arc<str> = Arc::from(input);
-        let range = (0, src.len() - 1);
+        let range = (0, src.len());
         Self { src, range }
     }
 }
@@ -42,17 +34,13 @@ impl Offset for Input {
 
 impl AsRef<str> for Input {
     fn as_ref(&self) -> &str {
-        &self.src[self.range.0..=self.range.1]
+        &self.src[self.range.0..self.range.0 + self.range.1]
     }
 }
 
 impl Input {
     pub fn len(&self) -> usize {
-        if self.range.1 >= self.range.0 {
-            self.range.1 - self.range.0 + 1
-        } else {
-            0
-        }
+        self.range.1
     }
 
     pub fn is_empty(&self) -> bool {
@@ -60,9 +48,10 @@ impl Input {
     }
 
     pub fn peek_str(&self, len: usize) -> &str {
+        let len = std::cmp::min(len, self.len());
         let from = self.range.0;
-        let to = from + len - 1;
-        &self.src[from..=to]
+        let to = from + len;
+        &self.src[from..to]
     }
 
     pub fn peek(&self) -> Option<char> {
@@ -70,13 +59,11 @@ impl Input {
     }
 
     pub fn chomp(&mut self, len: usize) -> Self {
-        if len == 0 {
-            return self.clone();
-        }
-
-        let range = (self.range.0, self.range.0 + len - 1);
-        self.range.0 += len;
+        let len = std::cmp::min(len, self.len());
         let src = self.src.clone();
+        let range = (self.range.0, len);
+        self.range.0 += len;
+        self.range.1 -= len;
         Self { src, range }
     }
 }
@@ -86,116 +73,149 @@ mod tests {
     use super::*;
 
     #[test]
-    fn input_create() {
+    fn input_0_create() {
         let i: Input = "(foo)".into();
 
-        assert_eq!("(foo)", i.as_ref());
-        assert_eq!("(foo)", i.peek_str(5));
-        assert_eq!("(foo", i.peek_str(4));
-        assert_eq!("(fo", i.peek_str(3));
-        assert_eq!(5, i.len());
+        assert_eq!( i.as_ref(), "(foo)" , "as_ref");
+        assert_eq!( i.peek_str(5), "(foo)", "peek_5");
+        assert_eq!( i.peek_str(4), "(foo", "peek_4");
+        assert_eq!( i.peek_str(3), "(fo", "peek_3" );
+        assert_eq!( i.len(), 5, "len" );
 
         assert_eq!(
+            i,
             Input {
                 src: "(foo)".into(),
-                range: (0, 4)
-            },
-            i
+                range: (0, 5)
+            }
         );
     }
 
     #[test]
-    fn input_chomp_0() {
+    fn input_1_chomp_0() {
         let mut i: Input = "(foo)".into();
         let j = i.chomp(0);
 
-        assert_eq!("(foo)", i.as_ref());
-        assert_eq!("(foo)", i.peek_str(5));
-        assert_eq!("(foo", i.peek_str(4));
-        assert_eq!("(fo", i.peek_str(3));
-        assert_eq!(5, i.len());
+        assert_eq!( i.as_ref(), "(foo)" );
+        assert_eq!( i.peek_str(5), "(foo)" );
+        assert_eq!( i.peek_str(4), "(foo" );
+        assert_eq!( i.peek_str(3), "(fo" );
+        assert_eq!( i.len(), 5 );
 
         assert_eq!(
+            i,
             Input {
                 src: "(foo)".into(),
-                range: (0, 4)
-            },
-            i
+                range: (0, 5)
+            }
         );
 
-        assert_eq!("(foo)", j.as_ref());
-        assert_eq!(5, j.len());
+        assert_eq!( j.as_ref(), "" );
+        assert_eq!( j.len(), 0 );
         assert_eq!(
-            Input {
-                src: "(foo)".into(),
-                range: (0, 4)
-            },
-            j
-        );
-    }
-
-    #[test]
-    fn input_chomp_1() {
-        let mut i: Input = "(foo)".into();
-        let j = i.chomp(1);
-
-        assert_eq!("foo)", i.as_ref());
-        assert_eq!(4, i.len());
-        assert_eq!("foo)", i.peek_str(4));
-        assert_eq!("foo", i.peek_str(3));
-        assert_eq!("fo", i.peek_str(2));
-
-        assert_eq!(
-            Input {
-                src: "(foo)".into(),
-                range: (1, 4)
-            },
-            i
-        );
-
-        assert_eq!("(", j.as_ref(), "j as_ref");
-        assert_eq!(1, j.len(), "j len");
-        assert_eq!("(", j.peek_str(1), "j peek 1");
-
-        assert_eq!(
+            j,
             Input {
                 src: "(foo)".into(),
                 range: (0, 0)
-            },
-            j
+            }
         );
     }
 
     #[test]
-    fn input_chomp_2() {
+    fn input_2_chomp_1() {
         let mut i: Input = "(foo)".into();
-        let j = i.chomp(2);
+        let j = i.chomp(1);
 
-        assert_eq!("oo)", i.as_ref());
-        assert_eq!(3, i.len());
-        assert_eq!("oo)", i.peek_str(3));
-        assert_eq!("oo", i.peek_str(2));
-        assert_eq!("o", i.peek_str(1));
+        assert_eq!( i.as_ref(), "foo)" );
+        assert_eq!( i.len(), 4 );
+        assert_eq!( i.peek_str(4), "foo)" );
+        assert_eq!( i.peek_str(3), "foo" );
+        assert_eq!( i.peek_str(2), "fo" );
 
         assert_eq!(
+            i,
             Input {
                 src: "(foo)".into(),
-                range: (2, 4)
-            },
-            i
+                range: (1, 4)
+            }
         );
 
-        assert_eq!("(f", j.as_ref(), "j as_ref");
-        assert_eq!(2, j.len(), "j len");
-        assert_eq!("(f", j.peek_str(2), "j peek 2");
-        assert_eq!("(", j.peek_str(1), "j peek 1");
+        assert_eq!( j.as_ref(), "(" , "j as_ref");
+        assert_eq!( j.len(), 1 , "j len");
+        assert_eq!( j.peek_str(1), "(" , "j peek 1");
 
         assert_eq!(
+            j,
             Input {
                 src: "(foo)".into(),
                 range: (0, 1)
-            },
-            j
+            }
+        );
+    }
+
+    #[test]
+    fn input_3_chomp_2() {
+        let mut i: Input = "(foo)".into();
+        let j = i.chomp(2);
+
+        assert_eq!( i.as_ref(), "oo)" );
+        assert_eq!( i.len(), 3 );
+        assert_eq!( i.peek_str(3), "oo)" );
+        assert_eq!( i.peek_str(2), "oo" );
+        assert_eq!( i.peek_str(1), "o" );
+
+        assert_eq!(
+            i,
+            Input {
+                src: "(foo)".into(),
+                range: (2, 3)
+            }
+        );
+
+        assert_eq!( j.as_ref(), "(f" , "j as_ref");
+        assert_eq!( j.len(), 2 , "j len");
+        assert_eq!( j.peek_str(2), "(f" , "j peek 2");
+        assert_eq!( j.peek_str(1), "(" , "j peek 1");
+
+        assert_eq!(
+            j,
+            Input {
+                src: "(foo)".into(),
+                range: (0, 2)
+            }
+        );
+    }
+
+    #[test]
+    fn input_4_chomp_999() {
+        let mut i: Input = "(foo)".into();
+        let j = i.chomp(999);
+
+        assert_eq!(i.as_ref(), "");
+        assert_eq!(i.len(), 0);
+        assert_eq!(i.peek_str(3), "");
+        assert_eq!(i.peek_str(2), "");
+        assert_eq!(i.peek_str(1), "");
+
+        assert_eq!(
+            i,
+            Input {
+                src: "(foo)".into(),
+                range: (5, 0)
+            }
+        );
+
+        assert_eq!(j.as_ref(), "(foo)", "j as_ref");
+        assert_eq!(j.len(), 5, "j len");
+        assert_eq!(j.peek_str(2), "(f", "j peek 2");
+        assert_eq!(j.peek_str(1), "(", "j peek 1");
+
+        assert_eq!(
+            j,
+            Input {
+                src: "(foo)".into(),
+                range: (0, 5)
+            }
         );
     }
 }

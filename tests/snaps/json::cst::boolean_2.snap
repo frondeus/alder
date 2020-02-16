@@ -1,0 +1,11 @@
+```
+dupa
+```
+
+ERROR (BOOLEAN): "dupa"(0, 4)
+
+PROBLEMS:
+* Expected `true` or `false` but found:
+```
+dupa
+```

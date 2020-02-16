@@ -1,0 +1,13 @@
+```
+["foo"]
+```
+
+ARRAY (VALUE): "[\"foo\"]"(0, 7)
+    TOKEN: "["(0, 1)
+    STRING (VALUE): "\"foo\""(1, 5)
+        TOKEN: "\""(1, 1)
+        VALUE: "foo"(2, 3)
+        TOKEN: "\""(5, 1)
+    TOKEN: "]"(6, 1)
+
+NO PROBLEMS

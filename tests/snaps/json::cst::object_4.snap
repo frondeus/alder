@@ -1,0 +1,29 @@
+```
+{ "foo": true, "bar": {} }
+```
+
+OBJECT: "{ \"foo\": true, \"bar\": {} }"(0, 26)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): " "(1, 1)
+    STRING (KEY): "\"foo\""(2, 5)
+        TOKEN: "\""(2, 1)
+        VALUE: "foo"(3, 3)
+        TOKEN: "\""(6, 1)
+    TOKEN: ":"(7, 1)
+    WS (EXTRA): " "(8, 1)
+    TOKEN (BOOLEAN VALUE): "true"(9, 4)
+    TOKEN: ","(13, 1)
+    WS (EXTRA): " "(14, 1)
+    STRING (KEY): "\"bar\""(15, 5)
+        TOKEN: "\""(15, 1)
+        VALUE: "bar"(16, 3)
+        TOKEN: "\""(19, 1)
+    TOKEN: ":"(20, 1)
+    WS (EXTRA): " "(21, 1)
+    OBJECT (VALUE): "{} "(22, 3)
+        TOKEN: "{"(22, 1)
+        TOKEN: "}"(23, 1)
+        WS (EXTRA): " "(24, 1)
+    TOKEN: "}"(25, 1)
+
+NO PROBLEMS

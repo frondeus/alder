@@ -23,7 +23,7 @@ impl TestCase {
     pub fn render(&self, i: usize) -> TokenStream2 {
         let fn_name = Ident::new(&self.fn_name, Span::call_site());
         let input = &self.input;
-        let name = escape_test_name(format!("{}_{}_{}", self.fn_name, i, input));
+        let name = escape_test_name(format!("{}_{}", self.fn_name, i));
 
         quote! {
             #[cfg(test)]

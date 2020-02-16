@@ -1,0 +1,21 @@
+```
+{ "foo": "bar" }
+```
+
+OBJECT: "{ \"foo\": \"bar\" }"(0, 16)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): " "(1, 1)
+    STRING (KEY): "\"foo\""(2, 5)
+        TOKEN: "\""(2, 1)
+        VALUE: "foo"(3, 3)
+        TOKEN: "\""(6, 1)
+    TOKEN: ":"(7, 1)
+    WS (EXTRA): " "(8, 1)
+    STRING (VALUE): "\"bar\""(9, 5)
+        TOKEN: "\""(9, 1)
+        VALUE: "bar"(10, 3)
+        TOKEN: "\""(13, 1)
+    WS (EXTRA): " "(14, 1)
+    TOKEN: "}"(15, 1)
+
+NO PROBLEMS
