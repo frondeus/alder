@@ -1,9 +1,58 @@
 use crate::*;
+use derive_more::Display;
 
 pub fn map(parser: impl Parser, f: impl Fn(Node) -> Node) -> impl Parser {
     move |state: &mut State| {
         let node = parser.parse(state);
         f(node)
+    }
+}
+
+#[derive(Debug, Display, Clone)]
+enum LexerError {
+    #[display(fmt = "Expected `{}`, but found:", _0)]
+    ExpectedTag(&'static str),
+
+    #[display(fmt = "Expected `{}`, but found:", _0)]
+    ExpectedChar(char),
+
+    #[display(fmt = "Expected `{}`, but found:", _0)]
+    UnexpectedEOF(&'static str),
+
+    #[display(fmt = "Expected `{}`, but found:", _0)]
+    UnexpectedEOFChar(char)
+}
+
+pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parser {
+    move |state: &mut State| {
+        let panic = state.panic;
+        let span = state.input.chomp(len);
+        dbg!(&panic);
+        dbg!(&span);
+        dbg!(&state);
+        match dbg!(state.last_error()) {
+            Some(_) if panic => {
+                let mut err = state.pop_node().unwrap(); //Unwrap: Some(_)
+                dbg!(&err);
+                err.span.range.1 = span.range.0;
+                err
+            },
+            _ if !panic => {
+                let problem = Box::new(problem.clone()) as Box<dyn Problem + 'static>;
+                state.problems.push((problem, span.clone()));
+                state.panic = true;
+                Node::error(span)
+            },
+            _ => Node::error(span)
+        }
+    }
+}
+
+pub fn fuse(parser: impl Parser) -> impl Parser {
+    move |state: &mut State| {
+        let node = parser.parse(state);
+        if !node.is(NodeId::ERROR) { state.panic = false; }
+        node
     }
 }
 
@@ -14,10 +63,15 @@ pub fn tag(tag: &'static str) -> impl Parser {
         if i_size >= size {
             let t = state.input.peek_str(size);
             if t == tag {
-                return Node::token(state.input.chomp(size));
+                Node::token(state.input.chomp(size))
+            }
+            else {
+                raise(LexerError::ExpectedTag(tag), size).parse(state)
             }
         }
-        Node::error(state.input.clone())
+        else {
+            raise(LexerError::UnexpectedEOF(tag), i_size).parse(state)
+        }
     }
 }
 
@@ -26,8 +80,11 @@ pub fn token(token: char) -> impl Parser {
         let next = state.input.as_ref().chars().next();
         match next {
             Some(n) if n == token => Node::token(state.input.chomp(1)),
-            Some(_) => Node::error(state.input.chomp(1)),
-            None => Node::error(state.input.chomp(0)),
+            Some(_) =>
+                raise(LexerError::ExpectedChar(token), 1).parse(state),
+                //Node::error(state.input.chomp(1)),
+            None => raise(LexerError::UnexpectedEOFChar(token), 0).parse(state)
+                //Node::error(state.input.chomp(0)),
         }
     }
 }

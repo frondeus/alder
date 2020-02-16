@@ -5,8 +5,8 @@ pub use tmp_alder::*;
 mod ast {
     use crate::*;
     use alder_derive::Ast;
-    use std::str::FromStr;
-    use std::collections::HashMap;
+    //use std::str::FromStr;
+    //use std::collections::HashMap;
     use tmp_alder::Ast;
 
     #[derive(Debug, Ast)]
@@ -216,6 +216,20 @@ mod cst {
             Key
     }
 
+    use derive_more::Display;
+    #[derive(Debug, Display, Clone)]
+    enum Problem {
+        #[display(fmt = "Expected `true` or `false` but found:")]
+        InvalidBoolean,
+
+        #[display(fmt = "Expected `,` or `]` but found:")]
+        InvalidTokenArray,
+
+        #[display(fmt = "Expected `true`, `false`, `[`, `{{` or `\"` but found:")]
+        InvalidTokenValue,
+    }
+
+
     fn extra() -> std::sync::Arc<dyn Parser> {
         chomp_while(Json::WS, |c| c.is_whitespace()).arc()
     }
@@ -233,6 +247,8 @@ mod cst {
             "false": true
         }
     */
+    /// [trua, falsa]
+    /// [truadsadsa, falsa]
     #[alder]
     pub fn value() -> impl Parser {
         with_extra(
@@ -243,12 +259,21 @@ mod cst {
                     Some('[') => state.add(array()),
                     Some('{') => state.add(object()),
                     Some('"') => state.add(string()),
-                    c => todo!("value {:?}", c),
+                    _ => state.add(raise(Problem::InvalidTokenValue, 1)),
+                    //c => todo!("value {:?}", c),
                 };
             }),
         )
     }
 
+    /// ""
+    /// "foo"
+    /// "foo bar"
+    /**
+        "foo
+        bar"
+    */
+    #[alder]
     pub fn string() -> impl Parser {
         no_extra(node(Json::String, |state| {
             state.add(token('"'));
@@ -259,39 +284,61 @@ mod cst {
 
     /// true
     /// false
+    /// dupa
+    /// tdupa
     #[alder]
     fn boolean() -> impl Parser {
         v_node(Json::Boolean, |state| match state.input.peek() {
             Some('t') => state.add(tag("true")),
             Some('f') => state.add(tag("false")),
-            c => todo!("boolean {:?}", c),
+            _ => state.add(raise(Problem::InvalidBoolean, 5)),
+                //todo!("boolean {:?}", c),
         })
     }
 
+    /// {}
+    /// {"foo":"bar"}
+    /// { "foo": "bar" }
+    /// { "foo": true, "bar": false }
+    /// { "foo": true, "bar": {} }
+    /// { "foo": true, "bar": { "foo": false } }
+    /// { "foo": true, "bar": [] }
+    #[alder]
     fn object() -> impl Parser {
+        with_extra(extra(),
         node(Json::Object, |state| {
             state.add(token('{'));
             match state.input.peek() {
                 Some('}') => (),
                 _ => loop {
                     state.add(field(Json::Key, string()));
-                    state.add(token(':'));
+                    state.add(fuse(token(':')));
                     state.add(value());
                     match state.input.peek() {
                         Some('}') => {
                             break;
                         }
-                        Some(',') => state.add(token(',')),
+                        Some(',') => {
+                            state.add(fuse(token(',')));
+                        },
                         c => todo!("object {:?}", c),
                     };
                 },
             };
-            state.add(token('}'));
-        })
+            state.add(fuse(token('}')));
+        }))
     }
 
+    /// []
+    /// [true]
+    /// [true,false]
+    /// [ ]
+    /// [ true ]
+    /// [ true, false ]
+    /// [ true, false, ]
+    #[alder]
     fn array() -> impl Parser {
-        node(Json::Array, |state| {
+        with_extra(extra(), node(Json::Array, |state| {
             state.add(token('['));
             match state.input.peek() {
                 Some(']') => (),
@@ -301,12 +348,18 @@ mod cst {
                         Some(']') => {
                             break;
                         }
-                        Some(',') => state.add(token(',')),
-                        c => todo!("array {:?}", c),
+                        Some(',') => {
+                            state.add(fuse(token(',')));
+                            if let Some(']') = state.input.peek() { // Trailing comma
+                                break;
+                            }
+                        },
+                        _ => state.add(raise(Problem::InvalidTokenArray, 1)),
+                        //c => todo!("array {:?}", c),
                     };
                 },
             }
-            state.add(token(']'));
-        })
+            state.add(fuse(token(']')));
+        }))
     }
 }

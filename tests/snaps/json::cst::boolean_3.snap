@@ -1,0 +1,12 @@
+```
+tdupa
+```
+
+ERROR (BOOLEAN): "tdup"(0, 4)
+
+REST: "a"(4, 1)
+PROBLEMS:
+* Expected `true`, but found:
+```
+tdup
+```

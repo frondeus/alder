@@ -1,0 +1,38 @@
+```
+{ "foo": true, "bar": { "foo": false } }
+```
+
+OBJECT: "{ \"foo\": true, \"bar\": { \"foo\": false } }"(0, 40)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): " "(1, 1)
+    STRING (KEY): "\"foo\""(2, 5)
+        TOKEN: "\""(2, 1)
+        VALUE: "foo"(3, 3)
+        TOKEN: "\""(6, 1)
+    TOKEN: ":"(7, 1)
+    WS (EXTRA): " "(8, 1)
+    TOKEN (BOOLEAN VALUE): "true"(9, 4)
+    TOKEN: ","(13, 1)
+    WS (EXTRA): " "(14, 1)
+    STRING (KEY): "\"bar\""(15, 5)
+        TOKEN: "\""(15, 1)
+        VALUE: "bar"(16, 3)
+        TOKEN: "\""(19, 1)
+    TOKEN: ":"(20, 1)
+    WS (EXTRA): " "(21, 1)
+    OBJECT (VALUE): "{ \"foo\": false } "(22, 17)
+        TOKEN: "{"(22, 1)
+        WS (EXTRA): " "(23, 1)
+        STRING (KEY): "\"foo\""(24, 5)
+            TOKEN: "\""(24, 1)
+            VALUE: "foo"(25, 3)
+            TOKEN: "\""(28, 1)
+        TOKEN: ":"(29, 1)
+        WS (EXTRA): " "(30, 1)
+        TOKEN (BOOLEAN VALUE): "false"(31, 5)
+        WS (EXTRA): " "(36, 1)
+        TOKEN: "}"(37, 1)
+        WS (EXTRA): " "(38, 1)
+    TOKEN: "}"(39, 1)
+
+NO PROBLEMS

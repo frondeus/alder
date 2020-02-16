@@ -54,19 +54,6 @@ impl Node {
         }
     }
 
-    //#[cfg(test)] TODO
-    pub fn test(name: NodeId, input: &str, range: (usize, usize), alias: &[NodeId]) -> Self {
-        let span = Input::new_test(input, range);
-        let mut node = Self {
-            name,
-            span,
-            alias: vec![],
-            children: vec![],
-        };
-        node.alias.extend(alias);
-        node
-    }
-
     pub fn is(&self, name: NodeId) -> bool {
         self.name == name || self.alias.iter().any(|alias| *alias == name)
     }

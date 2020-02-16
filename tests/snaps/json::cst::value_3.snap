@@ -1,0 +1,12 @@
+```
+[true,false]
+```
+
+ARRAY (VALUE): "[true,false]"(0, 12)
+    TOKEN: "["(0, 1)
+    TOKEN (BOOLEAN VALUE): "true"(1, 4)
+    TOKEN: ","(5, 1)
+    TOKEN (BOOLEAN VALUE): "false"(6, 5)
+    TOKEN: "]"(11, 1)
+
+NO PROBLEMS

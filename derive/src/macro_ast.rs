@@ -108,7 +108,7 @@ impl ToTokens for CstInputReceiver {
                 idents.push(ident);
             }
             generated.push(quote! { Some(Self { #(#idents),* }) });
-            dbg!(quote!{#(#generated)*}.to_string());
+            //dbg!(quote!{#(#generated)*}.to_string());
         }
 
         if let Some(mut variants) = data.as_ref().take_enum() {

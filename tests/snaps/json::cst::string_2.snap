@@ -1,0 +1,10 @@
+```
+"foo bar"
+```
+
+STRING: "\"foo bar\""(0, 9)
+    TOKEN: "\""(0, 1)
+    VALUE: "foo bar"(1, 7)
+    TOKEN: "\""(8, 1)
+
+NO PROBLEMS
