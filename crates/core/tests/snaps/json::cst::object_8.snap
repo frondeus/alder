@@ -1,0 +1,31 @@
+```
+{ "foo": truadsadsadssa, "bar": false }
+```
+
+OBJECT: "{ \"foo\": truadsadsadssa, \"bar\": false }"(0, 39)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): " "(1, 1)
+    STRING (KEY): "\"foo\""(2, 5)
+        TOKEN: "\""(2, 1)
+        VALUE: "foo"(3, 3)
+        TOKEN: "\""(6, 1)
+    TOKEN: ":"(7, 1)
+    WS (EXTRA): " "(8, 1)
+    ERROR (BOOLEAN VALUE): "truadsadsadssa"(9, 14)
+    TOKEN: ","(23, 1)
+    WS (EXTRA): " "(24, 1)
+    STRING (KEY): "\"bar\""(25, 5)
+        TOKEN: "\""(25, 1)
+        VALUE: "bar"(26, 3)
+        TOKEN: "\""(29, 1)
+    TOKEN: ":"(30, 1)
+    WS (EXTRA): " "(31, 1)
+    TOKEN (BOOLEAN VALUE): "false"(32, 5)
+    WS (EXTRA): " "(37, 1)
+    TOKEN: "}"(38, 1)
+
+PROBLEMS:
+* Expected `true`, but found:
+```
+trua
+```

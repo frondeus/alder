@@ -1,0 +1,15 @@
+[package]
+name = "alder"
+version = "0.1.0"
+authors = ["Wojciech Polak <frondeus@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+derive_more = "0.99.2"
+alder-derive = { path = "../derive" , optional = true }
+
+[dev-dependencies]
+alder-derive = { path = "../derive" }
+
+[features]
+derive = ["alder-derive"]

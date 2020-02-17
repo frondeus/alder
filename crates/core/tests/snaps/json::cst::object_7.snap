@@ -1,0 +1,21 @@
+```
+{ "foo": true
+```
+
+OBJECT: "{ \"foo\": true"(0, 13)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): " "(1, 1)
+    STRING (KEY): "\"foo\""(2, 5)
+        TOKEN: "\""(2, 1)
+        VALUE: "foo"(3, 3)
+        TOKEN: "\""(6, 1)
+    TOKEN: ":"(7, 1)
+    WS (EXTRA): " "(8, 1)
+    TOKEN (BOOLEAN VALUE): "true"(9, 4)
+    ERROR: ""(13, 0)
+
+PROBLEMS:
+* Expected `,` or `}` but found:
+```
+
+```
