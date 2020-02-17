@@ -1,0 +1,21 @@
+```
+[trua, falsa]
+```
+
+ARRAY: "[trua, falsa]"(0, 13)
+    TOKEN: "["(0, 1)
+    ERROR (BOOLEAN VALUE): "trua"(1, 4)
+    TOKEN: ","(5, 1)
+    WS (EXTRA): " "(6, 1)
+    ERROR (BOOLEAN VALUE): "falsa"(7, 5)
+    TOKEN: "]"(12, 1)
+
+PROBLEMS:
+* Expected `true`, but found:
+```
+trua
+```
+* Expected `false`, but found:
+```
+falsa
+```

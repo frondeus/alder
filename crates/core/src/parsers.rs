@@ -27,15 +27,11 @@ pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parse
     move |state: &mut State| {
         let panic = state.panic;
         let span = state.input.chomp(len);
-        dbg!(&panic);
-        dbg!(&span);
-        dbg!(&state);
-        match dbg!(state.last_error()) {
-            Some(_) if panic => {
-                let mut err = state.pop_node().unwrap(); //Unwrap: Some(_)
-                dbg!(&err);
-                err.span.range.1 = span.range.0;
-                err
+        let _span_str = span.as_ref();
+        match state.last_error() {
+            Some(err) if panic => {
+                err.span.range.1 += len;
+                none().parse(state)
             },
             _ if !panic => {
                 let problem = Box::new(problem.clone()) as Box<dyn Problem + 'static>;

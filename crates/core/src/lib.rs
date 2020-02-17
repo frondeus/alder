@@ -24,3 +24,6 @@ pub use parser::*;
 pub use parsers::*;
 pub use state::*;
 pub use ast::*;
+
+#[cfg(feature = "derive")]
+pub use alder_derive::*;

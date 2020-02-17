@@ -1,0 +1,46 @@
+```
+{
+    "a": "foo,
+    "b": "bar",
+    "c": "baz"
+}
+```
+
+OBJECT (VALUE): "{\n    \"a\": \"foo,\n    \"b\": \"bar\",\n    \"c\": \"baz\"\n}"(0, 49)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): "\n    "(1, 5)
+    STRING (KEY): "\"a\""(6, 3)
+        TOKEN: "\""(6, 1)
+        VALUE: "a"(7, 1)
+        TOKEN: "\""(8, 1)
+    TOKEN: ":"(9, 1)
+    WS (EXTRA): " "(10, 1)
+    STRING (VALUE): "\"foo,\n"(11, 6)
+        TOKEN: "\""(11, 1)
+        VALUE: "foo,"(12, 4)
+        ERROR: "\n"(16, 1)
+    WS (EXTRA): "    "(17, 4)
+    ERROR: "\"b\":"(21, 4)
+    WS (EXTRA): " "(25, 1)
+    ERROR: "\"bar\""(26, 5)
+    TOKEN: ","(31, 1)
+    WS (EXTRA): "\n    "(32, 5)
+    STRING (KEY): "\"c\""(37, 3)
+        TOKEN: "\""(37, 1)
+        VALUE: "c"(38, 1)
+        TOKEN: "\""(39, 1)
+    TOKEN: ":"(40, 1)
+    WS (EXTRA): " "(41, 1)
+    STRING (VALUE): "\"baz\""(42, 5)
+        TOKEN: "\""(42, 1)
+        VALUE: "baz"(43, 3)
+        TOKEN: "\""(46, 1)
+    WS (EXTRA): "\n"(47, 1)
+    TOKEN: "}"(48, 1)
+
+PROBLEMS:
+* Expected `"`, but found:
+```
+
+
+```

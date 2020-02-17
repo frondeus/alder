@@ -38,12 +38,13 @@ impl State {
         let mut state = Self::from(input);
         state.add(parser);
         let nodes = state.nodes.pop().expect("At least root").children;
-        Parsed {
+        let parsed = Parsed {
             input: input.into(),
             rest: state.input,
             nodes,
             problems: state.problems,
-        }
+        };
+        parsed
     }
 
     pub fn add(&mut self, parser: impl Parser) {

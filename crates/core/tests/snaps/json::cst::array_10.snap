@@ -1,0 +1,23 @@
+```
+[truad  sadsa, falsa]
+```
+
+ARRAY: "[truad  sadsa, falsa]"(0, 21)
+    TOKEN: "["(0, 1)
+    ERROR (BOOLEAN VALUE): "truad"(1, 5)
+    WS (EXTRA): "  "(6, 2)
+    ERROR: "sadsa"(8, 5)
+    TOKEN: ","(13, 1)
+    WS (EXTRA): " "(14, 1)
+    ERROR (BOOLEAN VALUE): "falsa"(15, 5)
+    TOKEN: "]"(20, 1)
+
+PROBLEMS:
+* Expected `true`, but found:
+```
+trua
+```
+* Expected `false`, but found:
+```
+falsa
+```
