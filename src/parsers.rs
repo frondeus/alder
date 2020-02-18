@@ -27,15 +27,17 @@ pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parse
     move |state: &mut State| {
         let panic = state.panic;
         let span = state.input.chomp(len);
-        let _span_str = span.as_ref();
         match state.last_error() {
             Some(err) if panic => {
                 err.span.range.1 += len;
+                if let Some(error) = state.errors.last_mut() {
+                    error.span.range.1 += len;
+                }
                 none().parse(state)
             },
             _ if !panic => {
                 let problem = Box::new(problem.clone()) as Box<dyn Problem + 'static>;
-                state.problems.push((problem, span.clone()));
+                state.errors.push(ParseError::new(problem, span.clone()));
                 state.panic = true;
                 Node::error(span)
             },
@@ -44,7 +46,7 @@ pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parse
     }
 }
 
-pub fn fuse(parser: impl Parser) -> impl Parser {
+pub fn recover(parser: impl Parser) -> impl Parser {
     move |state: &mut State| {
         let node = parser.parse(state);
         if !node.is(NodeId::ERROR) { state.panic = false; }

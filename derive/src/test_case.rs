@@ -32,7 +32,7 @@ impl TestCase {
                 let input = #input;
                 let actual = alder::State::parse(input, #fn_name());
                 let actual_dbg = format!("{}", actual);
-                alder::testing::snap(actual_dbg, module_path!(), stringify!(#name));
+                alder::testing::snap(actual_dbg, file!(), module_path!(), stringify!(#name));
             }
         }
     }

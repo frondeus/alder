@@ -27,5 +27,5 @@ OBJECT: "{ \"foo\": truadsadsadssa, \"bar\": false }"(0, 39)
 PROBLEMS:
 * Expected `true`, but found:
 ```
-trua
+truadsadsadssa
 ```

@@ -1,0 +1,9 @@
+```
+/* foo
+bar
+baz */
+```
+
+MULTILINECOMMENT (COMMENT): "/* foo\nbar\nbaz */"(0, 17)
+
+NO PROBLEMS

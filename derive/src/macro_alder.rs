@@ -6,7 +6,7 @@ use syn::parse_quote;
 use crate::test_case::TestCase;
 
 
-pub fn alder(input: TokenStream) -> TokenStream {
+pub fn alder_test(input: TokenStream) -> TokenStream {
     let item = parse_macro_input!(input as ItemFn);
 
     let fn_name = item.sig.ident.to_string();

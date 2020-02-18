@@ -2,13 +2,25 @@ use crate::*;
 use std::fmt::{Debug, Error, Formatter};
 use std::sync::Arc;
 
+#[derive(Debug)]
+pub struct ParseError {
+    pub problem: Box<dyn Problem + 'static>,
+    pub span: Input
+}
+
+impl ParseError {
+    pub fn new(problem: Box<dyn Problem + 'static>, span: Input) -> Self {
+        Self { problem, span }
+    }
+}
+
 pub struct State {
     pub input: Input,
     pub nodes: Vec<Node>,
     extras: Vec<Option<Arc<dyn Parser>>>,
     parsing_extra: bool,
-    pub(crate) problems: Vec<(Box<dyn Problem + 'static>, Input)>,
-    pub(crate) panic: bool
+    pub(crate) errors: Vec<ParseError>,
+    pub panic: bool
 }
 
 impl Debug for State {
@@ -26,7 +38,7 @@ impl<'a> From<&'a str> for State {
             input: input.clone(),
             nodes: vec![Node::root(input)],
             extras: vec![],
-            problems: vec![],
+            errors: vec![],
             parsing_extra: false,
             panic: false
         }
@@ -42,20 +54,20 @@ impl State {
             input: input.into(),
             rest: state.input,
             nodes,
-            problems: state.problems,
+            errors: state.errors,
         };
         parsed
     }
 
     pub fn add(&mut self, parser: impl Parser) {
-        if !self.parsing_extra {
+        if !self.parsing_extra && !self.panic {
             self.add_extra();
         }
 
         let node = parser.parse(self);
         self.add_node(node);
 
-        if !self.parsing_extra {
+        if !self.parsing_extra && !self.panic {
             self.add_extra();
         }
     }
@@ -80,7 +92,7 @@ impl State {
         if node.is(NodeId::VIRTUAL) {
             for mut child in node.children {
                 if !child.is(NodeId::EXTRA) {
-                    child.alias.extend(node.alias.iter().cloned());
+                    child.add_aliases(node.alias.as_slice());
                 }
                 parent.children.push(child);
             }
@@ -115,7 +127,7 @@ impl State {
             self.parsing_extra = true;
             let extra = extra.clone();
             let mut extra_node = extra.parse(self);
-            extra_node.alias.push(NodeId::EXTRA);
+            extra_node.add_alias(NodeId::EXTRA);
             self.add_node(extra_node);
             self.parsing_extra = false;
         }

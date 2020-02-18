@@ -19,10 +19,7 @@ OBJECT (VALUE): "{\n    \"a\": \"foo,\n    \"b\": \"bar\",\n    \"c\": \"baz\"\n
         TOKEN: "\""(11, 1)
         VALUE: "foo,"(12, 4)
         ERROR: "\n"(16, 1)
-    WS (EXTRA): "    "(17, 4)
-    ERROR: "\"b\":"(21, 4)
-    WS (EXTRA): " "(25, 1)
-    ERROR: "\"bar\""(26, 5)
+    ERROR: "    \"b\": \"bar\""(17, 14)
     TOKEN: ","(31, 1)
     WS (EXTRA): "\n    "(32, 5)
     STRING (KEY): "\"c\""(37, 3)
@@ -42,5 +39,5 @@ PROBLEMS:
 * Expected `"`, but found:
 ```
 
-
+    "b": "bar
 ```

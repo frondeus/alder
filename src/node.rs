@@ -54,6 +54,16 @@ impl Node {
         }
     }
 
+    pub fn add_alias(&mut self, alias: NodeId) {
+        if !self.is(alias) {
+            self.alias.push(alias);
+        }
+    }
+
+    pub fn add_aliases(&mut self, aliases: &[NodeId]) {
+        for alias in aliases { self.add_alias(*alias); }
+    }
+
     pub fn is(&self, name: NodeId) -> bool {
         self.name == name || self.alias.iter().any(|alias| *alias == name)
     }
