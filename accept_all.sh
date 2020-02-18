@@ -9,6 +9,7 @@ for file in $(find . -type f -name "*.new"); do
 
   echo "Accepting: $ACTUAL";
   echo "-----"
+  #clion diff "$EXPECTED" "$ACTUAL"
   diff -y -N "$EXPECTED" "$ACTUAL" | colordiff
   echo ""
   echo ""

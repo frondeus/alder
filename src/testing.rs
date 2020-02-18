@@ -1,12 +1,17 @@
-pub fn snap(actual_debug: String, module: &str, test_case_name: &str) {
+pub fn snap(actual_debug: String, file: &str, module: &str, test_case_name: &str) {
     println!("{}", actual_debug);
 
     use std::io::Write;
-    let dir_path: std::path::PathBuf = "tests/snaps".into();
+    let mut dir_path = std::path::PathBuf::from(file);
+
+    dir_path = dir_path.parent().expect("Parent directory").into();
+    dir_path.push("snaps");
+
+    let dir_path_str = dir_path.to_str().unwrap();
     let path: std::path::PathBuf =
-        format!("tests/snaps/{}::{}.snap", &module, test_case_name).into();
+        format!("{}/{}::{}.snap", dir_path_str, &module, test_case_name).into();
     let new_path: std::path::PathBuf =
-        format!("tests/snaps/{}::{}.snap.new", &module, test_case_name).into();
+        format!("{}/{}::{}.snap.new", dir_path_str, &module, test_case_name).into();
 
     if !path.exists() {
         let _r = std::fs::create_dir_all(&dir_path);

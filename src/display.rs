@@ -1,4 +1,4 @@
-use crate::{Input, Node, Parsed};
+use crate::{Input, Node, Parsed, ParseError};
 use std::fmt::{Display, Error, Formatter};
 
 impl Display for Input {
@@ -53,14 +53,14 @@ impl Display for Parsed {
         if !self.rest.is_empty() {
             writeln!(f, "REST: {:?}", self.rest)?;
         }
-        if self.problems.is_empty() {
+        if self.errors.is_empty() {
             writeln!(f, "NO PROBLEMS")?;
         } else {
             writeln!(f, "PROBLEMS:")?;
-            for (p, loc) in self.problems.iter() {
-                writeln!(f, "* {}", p)?;
+            for ParseError{problem, span} in self.errors.iter() {
+                writeln!(f, "* {}", problem)?;
                 writeln!(f, "```")?;
-                writeln!(f, "{}", loc)?;
+                writeln!(f, "{}", span)?;
                 writeln!(f, "```")?;
             }
         }

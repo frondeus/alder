@@ -1,0 +1,12 @@
+```
+/* foo
+```
+
+MULTILINECOMMENT (COMMENT): "/* foo"(0, 6)
+    ERROR: ""(6, 0)
+
+PROBLEMS:
+* Expected `*/` but found EOF:
+```
+
+```

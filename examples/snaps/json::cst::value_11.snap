@@ -1,0 +1,58 @@
+```
+{
+    "a": "foo", // Here
+    "b": /* Here */ "bar",
+    /*
+        HERE
+        */
+    "c": "baz"
+}
+```
+
+OBJECT (VALUE): "{\n    \"a\": \"foo\", // Here\n    \"b\": /* Here */ \"bar\",\n    /*\n        HERE\n        */\n    \"c\": \"baz\"\n}"(0, 100)
+    TOKEN: "{"(0, 1)
+    WS (EXTRA): "\n    "(1, 5)
+    STRING (KEY): "\"a\""(6, 3)
+        TOKEN: "\""(6, 1)
+        VALUE: "a"(7, 1)
+        TOKEN: "\""(8, 1)
+    TOKEN: ":"(9, 1)
+    WS (EXTRA): " "(10, 1)
+    STRING (VALUE): "\"foo\""(11, 5)
+        TOKEN: "\""(11, 1)
+        VALUE: "foo"(12, 3)
+        TOKEN: "\""(15, 1)
+    TOKEN: ","(16, 1)
+    WS (EXTRA): " "(17, 1)
+    INLINECOMMENT (COMMENT EXTRA): "// Here"(18, 7)
+    WS (EXTRA): "\n    "(25, 5)
+    STRING (KEY): "\"b\""(30, 3)
+        TOKEN: "\""(30, 1)
+        VALUE: "b"(31, 1)
+        TOKEN: "\""(32, 1)
+    TOKEN: ":"(33, 1)
+    WS (EXTRA): " "(34, 1)
+    MULTILINECOMMENT (COMMENT EXTRA): "/* Here */"(35, 10)
+    WS (EXTRA): " "(45, 1)
+    STRING (VALUE): "\"bar\""(46, 5)
+        TOKEN: "\""(46, 1)
+        VALUE: "bar"(47, 3)
+        TOKEN: "\""(50, 1)
+    TOKEN: ","(51, 1)
+    WS (EXTRA): "\n    "(52, 5)
+    MULTILINECOMMENT (COMMENT EXTRA): "/*\n        HERE\n        */"(57, 26)
+    WS (EXTRA): "\n    "(83, 5)
+    STRING (KEY): "\"c\""(88, 3)
+        TOKEN: "\""(88, 1)
+        VALUE: "c"(89, 1)
+        TOKEN: "\""(90, 1)
+    TOKEN: ":"(91, 1)
+    WS (EXTRA): " "(92, 1)
+    STRING (VALUE): "\"baz\""(93, 5)
+        TOKEN: "\""(93, 1)
+        VALUE: "baz"(94, 3)
+        TOKEN: "\""(97, 1)
+    WS (EXTRA): "\n"(98, 1)
+    TOKEN: "}"(99, 1)
+
+NO PROBLEMS

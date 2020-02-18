@@ -9,8 +9,8 @@ mod macro_alder;
 mod macro_ast;
 
 #[proc_macro_attribute]
-pub fn alder(_args: TokenStream, input: TokenStream) -> TokenStream {
-    macro_alder::alder(input)
+pub fn alder_test(_args: TokenStream, input: TokenStream) -> TokenStream {
+    macro_alder::alder_test(input)
 }
 
 #[proc_macro_derive(Ast, attributes(cst))]

@@ -2,10 +2,11 @@
 dupa
 ```
 
-ERROR (BOOLEAN): "dupa"(0, 4)
+ERROR (BOOLEAN): "d"(0, 1)
 
+REST: "upa"(1, 3)
 PROBLEMS:
 * Expected `true` or `false` but found:
 ```
-dupa
+d
 ```

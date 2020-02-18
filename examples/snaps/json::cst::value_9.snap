@@ -13,7 +13,7 @@ ARRAY (VALUE): "[truadsadsa, falsa]"(0, 19)
 PROBLEMS:
 * Expected `true`, but found:
 ```
-trua
+truadsadsa
 ```
 * Expected `false`, but found:
 ```

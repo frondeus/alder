@@ -1,0 +1,9 @@
+```
+// fooo
+rest
+```
+
+INLINECOMMENT (COMMENT): "// fooo"(0, 7)
+
+REST: "\nrest"(7, 5)
+NO PROBLEMS
