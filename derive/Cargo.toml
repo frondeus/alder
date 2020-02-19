@@ -1,10 +1,14 @@
 [package]
 name = "alder-derive"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Wojciech Polak <frondeus@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+description = "Parser combinator library inspired by Elm parser error messages"
+homepage = "https://github.com/frondeus/alder"
+repository = "https://github.com/frondeus/alder"
+keywords = ["parser", "combinator", "elm"]
+categories = ["parsing"]
 
 [lib]
 proc-macro = true
@@ -15,4 +19,3 @@ quote = "1.0"
 proc-macro2 = { version = "1.0", features = [] }
 unindent = "0.1.5"
 darling = "0.10.2"
-
