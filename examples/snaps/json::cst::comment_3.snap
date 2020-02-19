@@ -6,7 +6,7 @@ MULTILINECOMMENT (COMMENT): "/* foo"(0, 6)
     ERROR: ""(6, 0)
 
 PROBLEMS:
-* Expected `*/` but found EOF:
-```
-
-```
+--------------------------------- SYNTAX ERROR ---------------------------------
+I was parsing MultilineComment when found issue:
+[36m0  | [0m[97m/* foo[0m[90m\EOF[0m
+[36m   | [0m      ^ [1mI expected `*/`[0m

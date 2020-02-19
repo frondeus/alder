@@ -10,8 +10,8 @@ STRING: "\"foo\n"(0, 5)
 
 REST: "bar\""(5, 4)
 PROBLEMS:
-* Expected `"`, but found:
-```
-
-
-```
+--------------------------------- SYNTAX ERROR ---------------------------------
+I was parsing String when found issue:
+[36m0  | [0m[97m"foo[0m[90m\n[0m
+[36m   | [0m    ^ [1mI expected `"`[0m
+[36m1  | [0m[97mbar"[0m[90m\EOF[0m

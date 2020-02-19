@@ -3,14 +3,26 @@ use std::fmt::{Debug, Error, Formatter};
 use std::sync::Arc;
 
 #[derive(Debug)]
-pub struct ParseError {
-    pub problem: Box<dyn Problem + 'static>,
+pub struct ParseErrorContext {
+    pub node: NodeId,
     pub span: Input
 }
 
+impl ParseErrorContext {
+    pub fn new(node: NodeId, span: Input) -> Self { Self { node, span } }
+}
+
+
+#[derive(Debug)]
+pub struct ParseError {
+    pub problem: Box<dyn Problem + 'static>,
+    pub span: Input,
+    pub context: Vec<ParseErrorContext>
+}
+
 impl ParseError {
-    pub fn new(problem: Box<dyn Problem + 'static>, span: Input) -> Self {
-        Self { problem, span }
+    pub fn new(problem: Box<dyn Problem + 'static>, span: Input, context: Vec<ParseErrorContext>) -> Self {
+        Self { problem, span, context }
     }
 }
 
