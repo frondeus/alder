@@ -37,9 +37,8 @@ OBJECT (VALUE): "{\n    \"a\": \"foo,\n    \"b\": \"bar\",\n    \"c\": \"baz\"\n
 
 PROBLEMS:
 --------------------------------- SYNTAX ERROR ---------------------------------
-I was parsing String, and I expected `"`, but found:
-0  | {\n
-\n
-1  |     "a": "foo,\n
-   |               ^
-2  |     "b": "bar",\n
+I was parsing String when found issue:
+[36m0  | [0m[97m{[0m[90m\n[0m
+[36m1  | [0m[97m    "a": "foo,[0m[90m\n[0m
+[36m   | [0m              ^^^^^^^^^^^^^^ [1mI expected `"`[0m
+[36m2  | [0m[97m    "b": "bar",[0m[90m\n[0m

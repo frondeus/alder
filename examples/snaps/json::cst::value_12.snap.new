@@ -1,0 +1,20 @@
+```
+[true, / invalid comment
+false]
+```
+
+ARRAY (VALUE): "[true, / invalid comment\nfalse]"(0, 31)
+    TOKEN: "["(0, 1)
+    TOKEN (BOOLEAN VALUE): "true"(1, 4)
+    TOKEN: ","(5, 1)
+    WS (EXTRA): " "(6, 1)
+    ERROR (COMMENT EXTRA): "/"(7, 1)
+    ERROR (VALUE): " invalid comment\nfalse"(8, 22)
+    TOKEN: "]"(30, 1)
+
+PROBLEMS:
+--------------------------------- SYNTAX ERROR ---------------------------------
+I was parsing Comment when found issue:
+[36m0  | [0m[97m[true, / invalid comment[0m[90m\n[0m
+[36m   | [0m       ^^^^^^^^^^^^^^^^^^^^^^ [1mI expected `//` or `/*`[0m
+[36m1  | [0m[97mfalse][0m[90m\EOF[0m

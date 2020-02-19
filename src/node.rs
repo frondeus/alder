@@ -9,6 +9,8 @@ impl NodeId {
     pub const ERROR: Self = NodeId("ERROR");
     pub const EXTRA: Self = NodeId("EXTRA");
     pub const VIRTUAL: Self = NodeId("VIRTUAL");
+
+    pub const NO_CONTEXT: &'static [Self] = &[Self::ROOT, Self::VIRTUAL];
 }
 
 #[derive(Debug, PartialEq, Clone, Eq)]
@@ -52,6 +54,17 @@ impl Node {
             children: vec![],
             alias: vec![],
         }
+    }
+
+    pub fn all_names(&self) -> impl Iterator<Item = NodeId> + '_ {
+        std::iter::once(self.name)
+            .chain(self.alias.iter().copied())
+    }
+
+    pub fn all_names_with_span(&self) -> impl Iterator<Item = (NodeId, Input)> + '_ {
+        let s = self.span.clone();
+        std::iter::once((self.name, self.span.clone()))
+            .chain(self.alias.iter().map(move |n| (*n, s.clone())))
     }
 
     pub fn add_alias(&mut self, alias: NodeId) {

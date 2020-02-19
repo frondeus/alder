@@ -8,8 +8,12 @@ edition = "2018"
 members = ["derive"]
 
 [dependencies]
-derive_more = "0.99.2"
+# Workspace
 alder-derive = { path = "derive" , optional = true }
+
+# Crates.io
+derive_more = "0.99.2"
+colored = "1.9.2"
 
 [dev-dependencies]
 alder-derive = { path = "derive" }

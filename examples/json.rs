@@ -28,22 +28,22 @@ mod cst {
     use derive_more::Display;
     #[derive(Debug, Display, Clone)]
     enum Problem {
-        #[display(fmt = "Expected `true` or `false` but found:")]
+        #[display(fmt = "I expected `true` or `false`")]
         InvalidBoolean,
 
-        #[display(fmt = "Expected `,` or `]` but found:")]
+        #[display(fmt = "I expected `,` or `]`")]
         InvalidTokenArray,
 
-        #[display(fmt = "Expected `,` or `}}` but found:")]
+        #[display(fmt = "I expected `,` or `}}`")]
         InvalidTokenObject,
 
-        #[display(fmt = "Expected `true`, `false`, `[`, `{{` or `\"` but found:")]
+        #[display(fmt = "I expected `true`, `false`, `[`, `{{` or `\"`")]
         InvalidTokenValue,
 
-        #[display(fmt = "Expected `*/` but found EOF:")]
+        #[display(fmt = "I expected `*/`")]
         UnexpectedEOFComment,
 
-        #[display(fmt = "Expected `//` or `/*` but found:")]
+        #[display(fmt = "I expected `//` or `/*`")]
         InvalidTokenComment
     }
 
@@ -345,10 +345,7 @@ mod ast {
     #[derive(Debug, PartialEq, Eq, Ast)]
     #[cst(node = "cst::Json::String")]
     struct String {
-        node: Node,
-        //TODO:
-        //#[cst(map = "from_string")]
-        //value: std::string::String
+        node: Node
     }
 
     impl String {

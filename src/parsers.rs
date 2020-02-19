@@ -10,16 +10,16 @@ pub fn map(parser: impl Parser, f: impl Fn(Node) -> Node) -> impl Parser {
 
 #[derive(Debug, Display, Clone)]
 enum LexerError {
-    #[display(fmt = "Expected `{}`, but found:", _0)]
+    #[display(fmt = "I expected `{}`", _0)]
     ExpectedTag(&'static str),
 
-    #[display(fmt = "Expected `{}`, but found:", _0)]
+    #[display(fmt = "I expected `{}`", _0)]
     ExpectedChar(char),
 
-    #[display(fmt = "Expected `{}`, but found:", _0)]
+    #[display(fmt = "I expected `{}`", _0)]
     UnexpectedEOF(&'static str),
 
-    #[display(fmt = "Expected `{}`, but found:", _0)]
+    #[display(fmt = "I expected `{}`", _0)]
     UnexpectedEOFChar(char)
 }
 
@@ -37,7 +37,14 @@ pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parse
             },
             _ if !panic => {
                 let problem = Box::new(problem.clone()) as Box<dyn Problem + 'static>;
-                state.errors.push(ParseError::new(problem, span.clone()));
+                let context = state.nodes.iter()
+                    .flat_map(|node|
+                        node.all_names_with_span()
+                    )
+                    .filter(|(name, _)| !NodeId::NO_CONTEXT.contains(name))
+                    .map(|(name, span)| ParseErrorContext::new(name, span))
+                    .collect();
+                state.errors.push(ParseError::new(problem, span.clone(), context));
                 state.panic = true;
                 Node::error(span)
             },
@@ -120,19 +127,16 @@ pub fn none() -> impl Parser {
 }
 
 pub fn v_node(name: NodeId, f: impl Fn(&mut State)) -> impl Parser {
-    map(node(NodeId::VIRTUAL, f), move |mut node| {
-        node.alias.push(name);
-        node
-    })
+    node_inner(NodeId::VIRTUAL, vec![name], f)
 }
 
-pub fn node(name: NodeId, f: impl Fn(&mut State)) -> impl Parser {
+fn node_inner(name: NodeId, alias: Vec<NodeId>, f: impl Fn(&mut State)) -> impl Parser {
     move |state: &mut State| {
         let n = Node {
             name,
             span: state.input.clone(),
+            alias: alias.clone(),
             children: vec![],
-            alias: vec![],
         };
         state.nodes.push(n);
         f(state);
@@ -143,6 +147,10 @@ pub fn node(name: NodeId, f: impl Fn(&mut State)) -> impl Parser {
         n.span = n.span.chomp(len);
         n
     }
+}
+
+pub fn node(name: NodeId, f: impl Fn(&mut State)) -> impl Parser {
+    node_inner(name, vec![], f)
 }
 
 pub struct WithExtra<P: Parser> {

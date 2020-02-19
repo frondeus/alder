@@ -15,7 +15,7 @@ OBJECT: "{ \"foo\": true"(0, 13)
     ERROR: ""(13, 0)
 
 PROBLEMS:
-* Expected `,` or `}` but found:
-```
-
-```
+--------------------------------- SYNTAX ERROR ---------------------------------
+I was parsing Object when found issue:
+[36m0  | [0m[97m{ "foo": true[0m[90m\EOF[0m
+[36m   | [0m             ^ [1mI expected `,` or `}`[0m

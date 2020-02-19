@@ -6,7 +6,7 @@ ERROR (BOOLEAN): "d"(0, 1)
 
 REST: "upa"(1, 3)
 PROBLEMS:
-* Expected `true` or `false` but found:
-```
-d
-```
+--------------------------------- SYNTAX ERROR ---------------------------------
+I was parsing Boolean when found issue:
+[36m0  | [0m[97mdupa[0m[90m\EOF[0m
+[36m   | [0m^ [1mI expected `true` or `false`[0m
