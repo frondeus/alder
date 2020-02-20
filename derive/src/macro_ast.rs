@@ -55,7 +55,7 @@ impl ToTokens for CstInputReceiver {
 
         if let Some(ast::Fields { mut fields, .. }) = data.as_ref().take_struct() {
             let mut idents = vec![];
-            let node_field = fields.drain_filter(|CstFieldReceiver { ident , ..}| {
+            let node_field = fields.iter().position(|CstFieldReceiver { ident , ..}| {
                 if let Some(ident) = ident {
                     let node_ident: Ident = parse_quote! { node };
                     if ident == &node_ident {
@@ -64,7 +64,8 @@ impl ToTokens for CstInputReceiver {
                 }
                 else { return true };
                 return false;
-            }).next();
+            })
+            .map(|node_field_pos| fields.remove(node_field_pos));
 
             generated.push(quote! {
                 let node = iter.next()?;
