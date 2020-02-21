@@ -31,13 +31,13 @@ cargo add alder
 
 Or add it manually:
 ```toml
-alder =  "0.2.0"
+alder =  "0.3.0"
 ```
 
 You may want to enable a derive feature as well:
 
 ```toml
-alder = { version = "0.2.0" , features = ["derive"] }
+alder = { version = "0.3.0" , features = ["derive"] }
 ```
 
 ## Example

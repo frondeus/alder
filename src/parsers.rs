@@ -14,10 +14,10 @@ enum LexerError {
     ExpectedTag(&'static str),
 
     #[display(fmt = "I expected `{}`", _0)]
-    UnexpectedEOF(&'static str)
+    UnexpectedEOF(&'static str),
 }
 
-pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parser {
+pub fn raise(problem: impl Problem + Clone + 'static, len: usize) -> impl Parser {
     move |state: &mut State| {
         let panic = state.panic;
         let span = state.input.chomp(len);
@@ -28,21 +28,23 @@ pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parse
                     error.span.range.1 += len;
                 }
                 none().parse(state)
-            },
+            }
             _ if !panic => {
                 let problem = Box::new(problem.clone()) as Box<dyn Problem + 'static>;
-                let context = state.nodes.iter()
-                    .flat_map(|node|
-                        node.all_names_with_span()
-                    )
+                let context = state
+                    .nodes
+                    .iter()
+                    .flat_map(|node| node.all_names_with_span())
                     .filter(|(name, _)| !NodeId::NO_CONTEXT.contains(name))
                     .map(|(name, span)| ParseErrorContext::new(name, span))
                     .collect();
-                state.errors.push(ParseError::new(problem, span.clone(), context));
+                state
+                    .errors
+                    .push(ParseError::new(problem, span.clone(), context));
                 state.panic = true;
                 Node::error(span)
-            },
-            _ => Node::error(span)
+            }
+            _ => Node::error(span),
         }
     }
 }
@@ -50,7 +52,9 @@ pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parse
 pub fn recover(parser: impl Parser) -> impl Parser {
     move |state: &mut State| {
         let node = parser.parse(state);
-        if !node.is(NodeId::ERROR) { state.panic = false; }
+        if !node.is(NodeId::ERROR) {
+            state.panic = false;
+        }
         node
     }
 }
@@ -69,12 +73,10 @@ pub fn token(token: &'static str) -> impl Parser {
             let t = state.input.peek_str(size);
             if t == token {
                 Node::token(state.input.chomp(size))
-            }
-            else {
+            } else {
                 raise(LexerError::ExpectedTag(token), size).parse(state)
             }
-        }
-        else {
+        } else {
             raise(LexerError::UnexpectedEOF(token), i_size).parse(state)
         }
     }

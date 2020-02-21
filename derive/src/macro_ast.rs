@@ -1,10 +1,10 @@
-use proc_macro::{TokenStream};
-use proc_macro2::{TokenStream as TokenStream2};
+use proc_macro::TokenStream;
+use proc_macro2::TokenStream as TokenStream2;
 
-use syn::{parse_macro_input, DeriveInput, parse_quote, Ident};
-use quote::{quote, ToTokens};
 use darling::ast;
 use darling::{FromDeriveInput, FromField, FromVariant};
+use quote::{quote, ToTokens};
+use syn::{parse_macro_input, parse_quote, DeriveInput, Ident};
 
 #[derive(Debug, FromDeriveInput)]
 #[darling(attributes(cst), supports(any))]
@@ -26,7 +26,7 @@ struct CstFieldReceiver {
     #[darling(default)]
     find: Option<syn::Path>,
     #[darling(default)]
-    flatten: bool
+    flatten: bool,
 }
 
 #[derive(Debug, FromVariant)]
@@ -39,7 +39,6 @@ struct CstVariantReceiver {
     #[darling(default)]
     error: bool,
 }
-
 
 impl ToTokens for CstInputReceiver {
     fn to_tokens(&self, tokens: &mut TokenStream2) {
@@ -55,17 +54,20 @@ impl ToTokens for CstInputReceiver {
 
         if let Some(ast::Fields { mut fields, .. }) = data.as_ref().take_struct() {
             let mut idents = vec![];
-            let node_field = fields.iter().position(|CstFieldReceiver { ident , ..}| {
-                if let Some(ident) = ident {
-                    let node_ident: Ident = parse_quote! { node };
-                    if ident == &node_ident {
+            let node_field = fields
+                .iter()
+                .position(|CstFieldReceiver { ident, .. }| {
+                    if let Some(ident) = ident {
+                        let node_ident: Ident = parse_quote! { node };
+                        if ident == &node_ident {
+                            return true;
+                        }
+                    } else {
                         return true;
-                    }
-                }
-                else { return true };
-                return false;
-            })
-            .map(|node_field_pos| fields.remove(node_field_pos));
+                    };
+                    false
+                })
+                .map(|node_field_pos| fields.remove(node_field_pos));
 
             generated.push(quote! {
                 let node = iter.next()?;
@@ -77,11 +79,18 @@ impl ToTokens for CstInputReceiver {
                 });
             }
 
-            if let Some(CstFieldReceiver { ident , ..}) = node_field {
+            if let Some(CstFieldReceiver { ident, .. }) = node_field {
                 idents.push(ident);
             }
 
-            for CstFieldReceiver { ident, ty, find, flatten, ..} in fields {
+            for CstFieldReceiver {
+                ident,
+                ty,
+                find,
+                flatten,
+                ..
+            } in fields
+            {
                 if *flatten {
                     generated.push(quote! {
                         let mut #ident: #ty = Default::default();
@@ -91,8 +100,7 @@ impl ToTokens for CstInputReceiver {
                             } else { break; }
                         }
                     });
-                }
-                else if let Some(find) = find {
+                } else if let Some(find) = find {
                     generated.push(quote! {
                         let #ident = iter.find(|n| n.is(#find))
                         .and_then(|node| {
@@ -100,8 +108,7 @@ impl ToTokens for CstInputReceiver {
                             #ty::parse(&mut nodes.into_iter())
                         })?;
                     });
-                }
-                else {
+                } else {
                     generated.push(quote! {
                         let #ident: #ty = Ast::parse(iter).unwrap();
                     });
@@ -113,7 +120,6 @@ impl ToTokens for CstInputReceiver {
         }
 
         if let Some(mut variants) = data.as_ref().take_enum() {
-
             generated.push(quote! {
                 let mut iter = iter.peekable();
                 let node = iter.peek()?;
@@ -124,11 +130,11 @@ impl ToTokens for CstInputReceiver {
                     if !node.is(#node) { return None; }
                 });
             } else {
-                generated.push(quote!{ if false { unreachable!() } });
+                generated.push(quote! { if false { unreachable!() } });
             }
 
             let last = variants.pop();
-            for CstVariantReceiver { tag, ident, ..} in variants {
+            for CstVariantReceiver { tag, ident, .. } in variants {
                 if let Some(tag) = tag {
                     generated.push(quote! {
                         else if node.is(#tag) {
@@ -137,7 +143,10 @@ impl ToTokens for CstInputReceiver {
                     });
                 }
             }
-            if let Some(CstVariantReceiver{ ident, error: true, .. }) = last {
+            if let Some(CstVariantReceiver {
+                ident, error: true, ..
+            }) = last
+            {
                 generated.push(quote! {
                     else {
                         Some(#input_ident::#ident(iter.next().unwrap()))
@@ -173,17 +182,18 @@ impl ToTokens for CstInputReceiver {
 fn from_ast(input: &DeriveInput) -> TokenStream2 {
     let cst = match CstInputReceiver::from_derive_input(&input) {
         Ok(c) => c,
-        Err(e) => { return e.write_errors(); }
+        Err(e) => {
+            return e.write_errors();
+        }
     };
-    let tokens = quote!(#cst);
-    tokens.into()
+    quote!(#cst)
 }
 
 pub fn ast(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let from_ast = from_ast(&input);
 
-    let res = quote!{
+    let res = quote! {
         #from_ast
     };
 

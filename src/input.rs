@@ -83,11 +83,11 @@ mod tests {
     fn input_0_create() {
         let i: Input = "(foo)".into();
 
-        assert_eq!( i.as_ref(), "(foo)" , "as_ref");
-        assert_eq!( i.peek_str(5), "(foo)", "peek_5");
-        assert_eq!( i.peek_str(4), "(foo", "peek_4");
-        assert_eq!( i.peek_str(3), "(fo", "peek_3" );
-        assert_eq!( i.len(), 5, "len" );
+        assert_eq!(i.as_ref(), "(foo)", "as_ref");
+        assert_eq!(i.peek_str(5), "(foo)", "peek_5");
+        assert_eq!(i.peek_str(4), "(foo", "peek_4");
+        assert_eq!(i.peek_str(3), "(fo", "peek_3");
+        assert_eq!(i.len(), 5, "len");
 
         assert_eq!(
             i,
@@ -103,11 +103,11 @@ mod tests {
         let mut i: Input = "(foo)".into();
         let j = i.chomp(0);
 
-        assert_eq!( i.as_ref(), "(foo)" );
-        assert_eq!( i.peek_str(5), "(foo)" );
-        assert_eq!( i.peek_str(4), "(foo" );
-        assert_eq!( i.peek_str(3), "(fo" );
-        assert_eq!( i.len(), 5 );
+        assert_eq!(i.as_ref(), "(foo)");
+        assert_eq!(i.peek_str(5), "(foo)");
+        assert_eq!(i.peek_str(4), "(foo");
+        assert_eq!(i.peek_str(3), "(fo");
+        assert_eq!(i.len(), 5);
 
         assert_eq!(
             i,
@@ -117,8 +117,8 @@ mod tests {
             }
         );
 
-        assert_eq!( j.as_ref(), "" );
-        assert_eq!( j.len(), 0 );
+        assert_eq!(j.as_ref(), "");
+        assert_eq!(j.len(), 0);
         assert_eq!(
             j,
             Input {
@@ -133,11 +133,11 @@ mod tests {
         let mut i: Input = "(foo)".into();
         let j = i.chomp(1);
 
-        assert_eq!( i.as_ref(), "foo)" );
-        assert_eq!( i.len(), 4 );
-        assert_eq!( i.peek_str(4), "foo)" );
-        assert_eq!( i.peek_str(3), "foo" );
-        assert_eq!( i.peek_str(2), "fo" );
+        assert_eq!(i.as_ref(), "foo)");
+        assert_eq!(i.len(), 4);
+        assert_eq!(i.peek_str(4), "foo)");
+        assert_eq!(i.peek_str(3), "foo");
+        assert_eq!(i.peek_str(2), "fo");
 
         assert_eq!(
             i,
@@ -147,9 +147,9 @@ mod tests {
             }
         );
 
-        assert_eq!( j.as_ref(), "(" , "j as_ref");
-        assert_eq!( j.len(), 1 , "j len");
-        assert_eq!( j.peek_str(1), "(" , "j peek 1");
+        assert_eq!(j.as_ref(), "(", "j as_ref");
+        assert_eq!(j.len(), 1, "j len");
+        assert_eq!(j.peek_str(1), "(", "j peek 1");
 
         assert_eq!(
             j,
@@ -165,11 +165,11 @@ mod tests {
         let mut i: Input = "(foo)".into();
         let j = i.chomp(2);
 
-        assert_eq!( i.as_ref(), "oo)" );
-        assert_eq!( i.len(), 3 );
-        assert_eq!( i.peek_str(3), "oo)" );
-        assert_eq!( i.peek_str(2), "oo" );
-        assert_eq!( i.peek_str(1), "o" );
+        assert_eq!(i.as_ref(), "oo)");
+        assert_eq!(i.len(), 3);
+        assert_eq!(i.peek_str(3), "oo)");
+        assert_eq!(i.peek_str(2), "oo");
+        assert_eq!(i.peek_str(1), "o");
 
         assert_eq!(
             i,
@@ -179,10 +179,10 @@ mod tests {
             }
         );
 
-        assert_eq!( j.as_ref(), "(f" , "j as_ref");
-        assert_eq!( j.len(), 2 , "j len");
-        assert_eq!( j.peek_str(2), "(f" , "j peek 2");
-        assert_eq!( j.peek_str(1), "(" , "j peek 1");
+        assert_eq!(j.as_ref(), "(f", "j as_ref");
+        assert_eq!(j.len(), 2, "j len");
+        assert_eq!(j.peek_str(2), "(f", "j peek 2");
+        assert_eq!(j.peek_str(1), "(", "j peek 1");
 
         assert_eq!(
             j,

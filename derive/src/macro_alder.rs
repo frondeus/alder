@@ -1,10 +1,9 @@
+use crate::test_case::TestCase;
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, AttrStyle, ItemFn, Lit, Meta};
-use unindent::Unindent;
 use quote::quote;
 use syn::parse_quote;
-use crate::test_case::TestCase;
-
+use syn::{parse_macro_input, AttrStyle, ItemFn, Lit, Meta};
+use unindent::Unindent;
 
 pub fn alder_test(input: TokenStream) -> TokenStream {
     let item = parse_macro_input!(input as ItemFn);
@@ -45,10 +44,10 @@ pub fn alder_test(input: TokenStream) -> TokenStream {
         .collect::<Vec<_>>();
 
     let out = quote! {
-    #item
+        #item
 
-    #(#test_cases)*
-};
+        #(#test_cases)*
+    };
 
     out.into()
 }

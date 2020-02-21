@@ -1,6 +1,6 @@
+use crate::utils::escape_test_name;
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 use quote::quote;
-use crate::utils::escape_test_name;
 
 #[derive(Debug)]
 pub struct TestCase {

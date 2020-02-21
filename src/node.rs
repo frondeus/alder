@@ -23,8 +23,7 @@ pub struct Node {
 
 impl Node {
     pub fn iter(&self) -> impl Iterator<Item = &Node> {
-        std::iter::once(self)
-            .chain(self.children.iter())
+        std::iter::once(self).chain(self.children.iter())
     }
 }
 
@@ -57,8 +56,7 @@ impl Node {
     }
 
     pub fn all_names(&self) -> impl Iterator<Item = NodeId> + '_ {
-        std::iter::once(self.name)
-            .chain(self.alias.iter().copied())
+        std::iter::once(self.name).chain(self.alias.iter().copied())
     }
 
     pub fn all_names_with_span(&self) -> impl Iterator<Item = (NodeId, Input)> + '_ {
@@ -74,7 +72,9 @@ impl Node {
     }
 
     pub fn add_aliases(&mut self, aliases: &[NodeId]) {
-        for alias in aliases { self.add_alias(*alias); }
+        for alias in aliases {
+            self.add_alias(*alias);
+        }
     }
 
     pub fn is(&self, name: NodeId) -> bool {

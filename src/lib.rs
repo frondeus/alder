@@ -15,6 +15,7 @@ mod ast;
 
 pub mod testing;
 
+pub use ast::*;
 pub use input::*;
 pub use macros::*;
 pub use node::*;
@@ -23,7 +24,6 @@ pub use parsed::*;
 pub use parser::*;
 pub use parsers::*;
 pub use state::*;
-pub use ast::*;
 
 #[cfg(feature = "derive")]
 pub use alder_derive::*;

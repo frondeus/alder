@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // First we create the loseless parser
 mod cst {
     use alder::*;
@@ -44,20 +45,20 @@ mod cst {
         UnexpectedEOFComment,
 
         #[display(fmt = "I expected `//` or `/*`")]
-        InvalidTokenComment
+        InvalidTokenComment,
     }
-
 
     fn extra() -> std::sync::Arc<dyn Parser> {
         v_node(NodeId::EXTRA, |state| {
-           while !state.panic {
-               match state.input.peek() {
-                   Some(s) if s.is_whitespace() => state.add(ws()),
-                   Some('/') => state.add(comment()),
-                   _ => break
-               }
-           }
-        }).arc()
+            while !state.panic {
+                match state.input.peek() {
+                    Some(s) if s.is_whitespace() => state.add(ws()),
+                    Some('/') => state.add(comment()),
+                    _ => break,
+                }
+            }
+        })
+        .arc()
     }
 
     fn ws() -> impl Parser {
@@ -68,44 +69,43 @@ mod cst {
         c == '\n' || c == '\r'
     }
 
-    fn is_not_newline(c: char) -> bool { !is_newline(c) }
-
+    fn is_not_newline(c: char) -> bool {
+        !is_newline(c)
+    }
 
     /// // fooo
     /**
-        // fooo
-        rest
-    */
+                                                // fooo
+                                                rest
+                                            */
     /**
-        /* foo
-        bar
-        baz */
-    */
+                                                /* foo
+                                                bar
+                                                baz */
+                                            */
     /// /* foo
     #[alder_test]
     fn comment() -> impl Parser {
-        v_node(Json::Comment, |state|
-            match state.input.peek_str(2) {
-                "//" => state.add(chomp_while(Json::InlineComment, is_not_newline)),
-                "/*" => state.add(multiline_comment()),
-                _ => state.add(raise(Problem::InvalidTokenComment, 1))
-            }
-        )
+        v_node(Json::Comment, |state| match state.input.peek_str(2) {
+            "//" => state.add(chomp_while(Json::InlineComment, is_not_newline)),
+            "/*" => state.add(multiline_comment()),
+            _ => state.add(raise(Problem::InvalidTokenComment, 1)),
+        })
     }
 
     fn multiline_comment() -> impl Parser {
-        node(Json::MultilineComment, |state| {
-            loop {
-                match state.input.peek_str(2) {
-                    "*/" => {
-                        state.input.chomp(2);
-                        break;
-                    },
-                    "" => {
-                        state.add(raise(Problem::UnexpectedEOFComment, 0));
-                        break
-                    },
-                    _ => {state.input.chomp(1); }
+        node(Json::MultilineComment, |state| loop {
+            match state.input.peek_str(2) {
+                "*/" => {
+                    state.input.chomp(2);
+                    break;
+                }
+                "" => {
+                    state.add(raise(Problem::UnexpectedEOFComment, 0));
+                    break;
+                }
+                _ => {
+                    state.input.chomp(1);
                 }
             }
         })
@@ -119,34 +119,34 @@ mod cst {
     /// ["foo"]
     /// ["  foo   "]
     /**
-        {
-            "true": false,
-            "false": true
-        }
-    */
+                                                {
+                                                    "true": false,
+                                                    "false": true
+                                                }
+                                            */
     /// [trua, falsa]
     /// [truadsadsa, falsa]
     /**
-        {
-            "a": "foo,
-            "b": "bar",
-            "c": "baz"
-        }
-    */
+                                                {
+                                                    "a": "foo,
+                                                    "b": "bar",
+                                                    "c": "baz"
+                                                }
+                                            */
     /**
-        {
-            "a": "foo", // Here
-            "b": /* Here */ "bar",
-            /*
-                HERE
-                */
-            "c": "baz"
-        }
-    */
+                                                {
+                                                    "a": "foo", // Here
+                                                    "b": /* Here */ "bar",
+                                                    /*
+                                                        HERE
+                                                        */
+                                                    "c": "baz"
+                                                }
+                                            */
     /**
-        [true, / invalid comment
-        false]
-    */
+                                                [true, / invalid comment
+                                                false]
+                                            */
     #[alder_test]
     pub fn value() -> impl Parser {
         with_extra(
@@ -203,38 +203,42 @@ mod cst {
     /// { "foo": truadsadsadssa, "bar": false }
     #[alder_test]
     fn object() -> impl Parser {
-        with_extra(extra(),
-        node(Json::Object, |state| {
-            state.add("{");
-            match state.input.peek() {
-                Some('}') => (),
-                _ => 'outer: loop {
-                    state.add(field(Json::Key, string()));
-                    state.add(recover(":"));
-                    state.add(value());
-                    'inner: loop {
-                        match state.input.peek() {
-                            Some('}') => {
-                                break 'outer;
-                            }
-                            Some(',') => {
-                                state.add(recover(","));
-                                if let Some('}') = state.input.peek() { // Trailing comma
+        with_extra(
+            extra(),
+            node(Json::Object, |state| {
+                state.add("{");
+                match state.input.peek() {
+                    Some('}') => (),
+                    _ => 'outer: loop {
+                        state.add(field(Json::Key, string()));
+                        state.add(recover(":"));
+                        state.add(value());
+                        'inner: loop {
+                            match state.input.peek() {
+                                Some('}') => {
                                     break 'outer;
                                 }
-                                break 'inner;
-                            },
-                            None => { // EOF
-                                state.add(raise(Problem::InvalidTokenObject, 1));
-                                break 'outer;
-                            },
-                            _ => state.add(raise(Problem::InvalidTokenObject, 1)),
-                        };
-                    }
-                },
-            };
-            state.add(recover("}"));
-        }))
+                                Some(',') => {
+                                    state.add(recover(","));
+                                    if let Some('}') = state.input.peek() {
+                                        // Trailing comma
+                                        break 'outer;
+                                    }
+                                    break 'inner;
+                                }
+                                None => {
+                                    // EOF
+                                    state.add(raise(Problem::InvalidTokenObject, 1));
+                                    break 'outer;
+                                }
+                                _ => state.add(raise(Problem::InvalidTokenObject, 1)),
+                            };
+                        }
+                    },
+                };
+                state.add(recover("}"));
+            }),
+        )
     }
 
     /// []
@@ -250,41 +254,47 @@ mod cst {
     /// [truad  sadsa, falsa]
     #[alder_test]
     fn array() -> impl Parser {
-        with_extra(extra(), node(Json::Array, |state| {
-            state.add("[");
-            match state.input.peek() {
-                Some(']') => (),
-                _ => 'outer: loop {
-                    state.add(value());
-                    'inner: loop { // Until we find either ']' or ','
-                        match state.input.peek() {
-                            Some(']') => {
-                                break 'outer;
-                            }
-                            Some(',') => {
-                                state.add(recover(","));
-                                if let Some(']') = state.input.peek() { // Trailing comma
+        with_extra(
+            extra(),
+            node(Json::Array, |state| {
+                state.add("[");
+                match state.input.peek() {
+                    Some(']') => (),
+                    _ => 'outer: loop {
+                        state.add(value());
+                        'inner: loop {
+                            // Until we find either ']' or ','
+                            match state.input.peek() {
+                                Some(']') => {
                                     break 'outer;
                                 }
-                                break 'inner;
-                            },
-                            None => { // EOF
-                                state.add(raise(Problem::InvalidTokenArray, 1));
-                                break 'outer;
-                            },
-                            _ => state.add(raise(Problem::InvalidTokenArray, 1)),
-                        };
-                    }
-                },
-            }
-            state.add(recover("]"));
-        }))
+                                Some(',') => {
+                                    state.add(recover(","));
+                                    if let Some(']') = state.input.peek() {
+                                        // Trailing comma
+                                        break 'outer;
+                                    }
+                                    break 'inner;
+                                }
+                                None => {
+                                    // EOF
+                                    state.add(raise(Problem::InvalidTokenArray, 1));
+                                    break 'outer;
+                                }
+                                _ => state.add(raise(Problem::InvalidTokenArray, 1)),
+                            };
+                        }
+                    },
+                }
+                state.add(recover("]"));
+            }),
+        )
     }
 }
 
 mod ast {
     use crate::*;
-    use alder::{Ast, State, Node};
+    use alder::{Ast, Node, State};
     #[cfg(not(feature = "derive"))]
     use alder_derive::Ast;
 
@@ -300,7 +310,7 @@ mod ast {
         #[cst(tag = "cst::Json::Object")]
         Object(Object),
         #[cst(error)]
-        Error(Node)
+        Error(Node),
     }
 
     impl Value {
@@ -310,34 +320,34 @@ mod ast {
                 Value::Boolean(_) => "boolean",
                 Value::Array(_) => "array",
                 Value::Object(_) => "object",
-                Value::Error(_) => "error"
+                Value::Error(_) => "error",
             }
         }
         fn as_string(&self) -> &String {
             match self {
                 Value::String(s) => s,
-                _ => panic!("Expected string")
+                _ => panic!("Expected string"),
             }
         }
 
         fn as_boolean(&self) -> &Boolean {
             match self {
                 Value::Boolean(b) => b,
-                _ => panic!("Expected boolean")
+                _ => panic!("Expected boolean"),
             }
         }
 
         fn as_array(&self) -> &Array {
             match self {
                 Value::Array(a) => a,
-                v => panic!("Expected array, found: {}", v.name())
+                v => panic!("Expected array, found: {}", v.name()),
             }
         }
 
         fn as_object(&self) -> &Object {
             match self {
                 Value::Object(o) => o,
-                v => panic!("Expected object, found: {}", v.name())
+                v => panic!("Expected object, found: {}", v.name()),
             }
         }
     }
@@ -345,22 +355,25 @@ mod ast {
     #[derive(Debug, PartialEq, Eq, Ast)]
     #[cst(node = "cst::Json::String")]
     struct String {
-        node: Node
+        node: Node,
     }
 
     impl String {
         fn value(&self) -> &str {
-            let val = self.node.children.iter()
-                .filter(|c| c.is(cst::Json::Value)).next()
+            self.node
+                .children
+                .iter()
+                .find(|c| c.is(cst::Json::Value))
                 .map(|value| value.span.as_ref())
-                .unwrap_or_default();
-            val
+                .unwrap_or_default()
         }
     }
 
     #[derive(Debug, Ast)]
     #[cst(node = "cst::Json::Boolean")]
-    struct Boolean{ node: Node }
+    struct Boolean {
+        node: Node,
+    }
 
     impl Boolean {
         fn value(&self) -> bool {
@@ -386,13 +399,14 @@ mod ast {
     struct Object {
         #[cst(flatten)]
         pairs: Vec<KeyValuePair>,
-        node: Node
+        node: Node,
     }
 
     impl Object {
         fn iter(&self) -> impl Iterator<Item = (&str, &Value)> {
-            self.pairs.iter()
-                .map(|KeyValuePair{key, value}| (key.value(), value))
+            self.pairs
+                .iter()
+                .map(|KeyValuePair { key, value }| (key.value(), value))
         }
     }
 
@@ -401,7 +415,7 @@ mod ast {
         #[cst(find = "cst::Json::Key")]
         key: String,
         #[cst(find = "cst::Json::Value")]
-        value: Value
+        value: Value,
     }
 
     #[cfg(test)]
@@ -430,7 +444,8 @@ mod ast {
         fn array() {
             let value = Value::from_str("[true,false]").unwrap();
             let v = value.as_array();
-            let values = v.iter()
+            let values = v
+                .iter()
                 .map(|v| v.as_boolean())
                 .map(|v| v.value())
                 .collect::<Vec<_>>();
@@ -442,10 +457,10 @@ mod ast {
         fn object() {
             let value = Value::from_str(r#"{ "a": true, "b": false }"#).unwrap();
             let v = value.as_object();
-            let values = v.iter()
-                .map(|(k, v)| {
-                    (k, v.as_boolean().value())
-                }).collect::<Vec<_>>();
+            let values = v
+                .iter()
+                .map(|(k, v)| (k, v.as_boolean().value()))
+                .collect::<Vec<_>>();
 
             assert_eq!(values, vec![("a", true), ("b", false)]);
         }
@@ -454,27 +469,26 @@ mod ast {
         fn adv_object() {
             let value = Value::from_str(r#"{ "a": true, "c": [true], "b": false }"#).unwrap();
             let v = value.as_object();
-            let values = v.iter()
-                .map(|(k, v)| {
-                    (k, v.name())
-                }).collect::<Vec<_>>();
+            let values = v.iter().map(|(k, v)| (k, v.name())).collect::<Vec<_>>();
 
-            assert_eq!(values, vec![("a", "boolean"), ("c", "array"), ("b", "boolean")]);
+            assert_eq!(
+                values,
+                vec![("a", "boolean"), ("c", "array"), ("b", "boolean")]
+            );
         }
 
         #[test]
         fn err_object() {
             let value = Value::from_str(r#"{ "a": true, c": [true], "b": false }"#).unwrap();
             let v = value.as_object();
-            let values = v.iter()
-                .map(|(k, v)| {
-                    (k, v.name())
-                }).collect::<Vec<_>>();
+            let values = v.iter().map(|(k, v)| (k, v.name())).collect::<Vec<_>>();
 
-            assert_eq!(values, vec![("a", "boolean"), ("", "array"), ("b", "boolean")]);
+            assert_eq!(
+                values,
+                vec![("a", "boolean"), ("", "array"), ("b", "boolean")]
+            );
         }
     }
 }
 
 fn main() {}
-
