@@ -14,13 +14,7 @@ enum LexerError {
     ExpectedTag(&'static str),
 
     #[display(fmt = "I expected `{}`", _0)]
-    ExpectedChar(char),
-
-    #[display(fmt = "I expected `{}`", _0)]
-    UnexpectedEOF(&'static str),
-
-    #[display(fmt = "I expected `{}`", _0)]
-    UnexpectedEOFChar(char)
+    UnexpectedEOF(&'static str)
 }
 
 pub fn raise(problem: impl Problem  + Clone + 'static, len: usize) -> impl Parser {
@@ -61,35 +55,27 @@ pub fn recover(parser: impl Parser) -> impl Parser {
     }
 }
 
-pub fn tag(tag: &'static str) -> impl Parser {
-    move |state: &mut State| {
-        let size = tag.len();
-        let i_size = state.input.len();
-        if i_size >= size {
-            let t = state.input.peek_str(size);
-            if t == tag {
-                Node::token(state.input.chomp(size))
-            }
-            else {
-                raise(LexerError::ExpectedTag(tag), size).parse(state)
-            }
-        }
-        else {
-            raise(LexerError::UnexpectedEOF(tag), i_size).parse(state)
-        }
+impl Parser for &'static str {
+    fn parse(&self, state: &mut State) -> Node {
+        token(self).parse(state)
     }
 }
 
-pub fn token(token: char) -> impl Parser {
+pub fn token(token: &'static str) -> impl Parser {
     move |state: &mut State| {
-        let next = state.input.as_ref().chars().next();
-        match next {
-            Some(n) if n == token => Node::token(state.input.chomp(1)),
-            Some(_) =>
-                raise(LexerError::ExpectedChar(token), 1).parse(state),
-                //Node::error(state.input.chomp(1)),
-            None => raise(LexerError::UnexpectedEOFChar(token), 0).parse(state)
-                //Node::error(state.input.chomp(0)),
+        let size = token.len();
+        let i_size = state.input.len();
+        if i_size >= size {
+            let t = state.input.peek_str(size);
+            if t == token {
+                Node::token(state.input.chomp(size))
+            }
+            else {
+                raise(LexerError::ExpectedTag(token), size).parse(state)
+            }
+        }
+        else {
+            raise(LexerError::UnexpectedEOF(token), i_size).parse(state)
         }
     }
 }

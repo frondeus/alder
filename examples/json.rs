@@ -173,9 +173,9 @@ mod cst {
     #[alder_test]
     pub fn string() -> impl Parser {
         no_extra(node(Json::String, |state| {
-            state.add(token('"'));
+            state.add("\"");
             state.add(chomp_while(Json::Value, |c| c != '"' && c != '\n'));
-            state.add(token('"'));
+            state.add("\"");
         }))
     }
 
@@ -186,8 +186,8 @@ mod cst {
     #[alder_test]
     fn boolean() -> impl Parser {
         v_node(Json::Boolean, |state| match state.input.peek() {
-            Some('t') => state.add(tag("true")),
-            Some('f') => state.add(tag("false")),
+            Some('t') => state.add("true"),
+            Some('f') => state.add("false"),
             _ => state.add(raise(Problem::InvalidBoolean, 1)),
         })
     }
@@ -205,12 +205,12 @@ mod cst {
     fn object() -> impl Parser {
         with_extra(extra(),
         node(Json::Object, |state| {
-            state.add(token('{'));
+            state.add("{");
             match state.input.peek() {
                 Some('}') => (),
                 _ => 'outer: loop {
                     state.add(field(Json::Key, string()));
-                    state.add(recover(token(':')));
+                    state.add(recover(":"));
                     state.add(value());
                     'inner: loop {
                         match state.input.peek() {
@@ -218,7 +218,7 @@ mod cst {
                                 break 'outer;
                             }
                             Some(',') => {
-                                state.add(recover(token(',')));
+                                state.add(recover(","));
                                 if let Some('}') = state.input.peek() { // Trailing comma
                                     break 'outer;
                                 }
@@ -233,7 +233,7 @@ mod cst {
                     }
                 },
             };
-            state.add(recover(token('}')));
+            state.add(recover("}"));
         }))
     }
 
@@ -251,7 +251,7 @@ mod cst {
     #[alder_test]
     fn array() -> impl Parser {
         with_extra(extra(), node(Json::Array, |state| {
-            state.add(token('['));
+            state.add("[");
             match state.input.peek() {
                 Some(']') => (),
                 _ => 'outer: loop {
@@ -262,7 +262,7 @@ mod cst {
                                 break 'outer;
                             }
                             Some(',') => {
-                                state.add(recover(token(',')));
+                                state.add(recover(","));
                                 if let Some(']') = state.input.peek() { // Trailing comma
                                     break 'outer;
                                 }
@@ -277,7 +277,7 @@ mod cst {
                     }
                 },
             }
-            state.add(recover(token(']')));
+            state.add(recover("]"));
         }))
     }
 }

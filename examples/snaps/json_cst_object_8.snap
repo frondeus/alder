@@ -27,5 +27,5 @@ OBJECT: "{ \"foo\": truadsadsadssa, \"bar\": false }"(0, 39)
 PROBLEMS:
 [38;5;1m--------------------------------- SYNTAX ERROR ---------------------------------[m
 I was parsing Boolean when found issue:
-[38;5;6m 0 |[38;5;15m[1m{ "foo": truadsadsadssa, "bar": false }[m[38;5;8m\EOF
+[38;5;6m 0 |[38;5;15m[1m{ "foo": truadsadsadssa, "bar": false }[m[38;5;8m\EOF[m
 [38;5;6m ~ |[m         [38;5;9m^^^^^^^^^^^^^^ I expected `true`[m

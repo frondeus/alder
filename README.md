@@ -68,7 +68,7 @@ fn array() -> impl Parser {
     // with_extra injects whitespace parser before and after every token.
     // Unless you explicitly told parser not to do it (for example in strings).
     with_extra(ws(), node(Json::Array, |state| {
-        state.add(token('['));
+        state.add("[");
         match state.input.peek() {
             Some(']') => (),
             _ => 'outer: loop {
@@ -80,7 +80,7 @@ fn array() -> impl Parser {
                         }
                         Some(',') => {
                             // If there was a problem and we find `,` we try to process rest of the array normally.
-                            state.add(recover(token(',')));
+                            state.add(recover(","));
 
                             // Trailing comma
                             if let Some(']') = state.input.peek() { 
@@ -98,7 +98,7 @@ fn array() -> impl Parser {
                 }
             },
         }
-        state.add(recover(token(']')));
+        state.add(recover("]"));
     }))
 }
 ```

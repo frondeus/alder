@@ -13,9 +13,9 @@ ARRAY: "[truad  sadsa, falsa]"(0, 21)
 PROBLEMS:
 [38;5;1m--------------------------------- SYNTAX ERROR ---------------------------------[m
 I was parsing Boolean when found issue:
-[38;5;6m 0 |[38;5;15m[1m[truad  sadsa, falsa][m[38;5;8m\EOF
+[38;5;6m 0 |[38;5;15m[1m[truad  sadsa, falsa][m[38;5;8m\EOF[m
 [38;5;6m ~ |[m [38;5;9m^^^^^^^^^^^^ I expected `true`[m
 [38;5;1m--------------------------------- SYNTAX ERROR ---------------------------------[m
 I was parsing Boolean when found issue:
-[38;5;6m 0 |[38;5;15m[1m[truad  sadsa, falsa][m[38;5;8m\EOF
+[38;5;6m 0 |[38;5;15m[1m[truad  sadsa, falsa][m[38;5;8m\EOF[m
 [38;5;6m ~ |[m               [38;5;9m^^^^^ I expected `false`[m

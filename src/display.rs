@@ -205,7 +205,6 @@ impl Display for FancyCode {
                 let &to = &entry.span.to;
                 let ws_len = if ln == from.line { from.column } else { 0 };
 
-                dbg!(&to.column);
                 let u_len = if ln == to.line && ln != from.line {
                     1 + to.column - ws_len
                 } else if ln == to.line {
