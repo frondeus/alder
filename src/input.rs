@@ -39,6 +39,13 @@ impl AsRef<str> for Input {
 }
 
 impl Input {
+    pub fn full(&self) -> Input {
+        let src = self.src.clone();
+        let len = src.len();
+        let range = (0, len);
+        Self { src, range }
+    }
+
     pub fn len(&self) -> usize {
         self.range.1
     }

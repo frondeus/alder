@@ -24,7 +24,8 @@ alder-derive = { path = "derive", version = "=0.1.1", optional = true }
 
 # Crates.io
 derive_more = "0.99.2"
-colored = "1.9.2"
+itertools = "0.8.2"
+termion = "1.5.5"
 
 [dev-dependencies]
 alder-derive = { path = "derive", version = "=0.1.1" }

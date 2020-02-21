@@ -1,5 +1,10 @@
-use crate::{Input, Node, Parsed, ParseError, NodeId, Offset};
+use crate::{Input, Node, Parsed, ParseError, NodeId};
 use std::fmt::{Display, Error, Formatter};
+use itertools::Itertools;
+use std::str::Lines;
+use std::cmp::{PartialOrd, Ordering};
+use termion::{style, color};
+use termion::color::Color;
 
 impl Display for Input {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -64,14 +69,14 @@ impl Display for Parsed {
         } else {
             writeln!(f, "PROBLEMS:")?;
             for ParseError{problem, span, context} in self.errors.iter() {
-                writeln!(f, "{:-^80}", " SYNTAX ERROR ")?;
+                writeln!(f, "{}{:-^80}{}",  color::Fg(color::Red), " SYNTAX ERROR ", style::Reset )?;
                 if let Some(context) = context.last() {
                     write!(f, "I was parsing {} when ", context.node)?;
                 }
                 writeln!(f, "found issue:")?;
 
-                DisplayInput::new(&self.input, span.clone())
-                    .with_desc(format!("{}", problem).as_str())
+                FancyCode::new(&self.input)
+                    .with_desc(span, format!("{}", problem).as_str(), color::LightRed)
                     .fmt(f)?;
             }
         }
@@ -79,30 +84,85 @@ impl Display for Parsed {
     }
 }
 
-use colored::{ColoredString, Colorize};
-
-type DisplayString = ColoredString;
+type DisplayString = String;
 
 pub struct DisplayInputEntry {
-    span: Input,
+    span: Span,
     desc: Option<DisplayString>,
+    color: String
 }
 
-pub struct DisplayInput {
-    input: Input,
+pub struct FancyCode {
+    src: Input,
     entries: Vec<DisplayInputEntry>,
 }
 
-// TODO: Fix value_10 and value_12. Which is - underscore is longer than line.
-impl DisplayInput {
-    pub fn new(input: &Input, span: Input) -> Self {
+#[derive(Clone, Copy, Debug)]
+pub struct Position {
+    pub line: usize,
+    pub column: usize,
+    pub offset: usize,
+}
+
+impl PartialEq for Position {
+    fn eq(&self, other: &Position) -> bool {
+        self.offset == other.offset
+    }
+}
+impl PartialOrd for Position {
+    fn partial_cmp(&self, other: &Position) -> Option<Ordering> {
+        self.offset.partial_cmp(&other.offset)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Span {
+    pub from: Position,
+    pub to: Position
+}
+
+impl Position {
+    pub fn build(offset: usize, lines: Lines) -> Self {
+        let mut off = offset;
+        let mut line = 0;
+        let mut column = 0;
+
+        for (j, l) in lines.enumerate() {
+            if off <= l.len() {
+                line = j;
+                column = off;
+                break;
+            } else {
+                off = off - l.len() - 1;
+                line = j + 1;
+            }
+        }
+
+        Self { line, column, offset }
+    }
+}
+
+impl<'a> From<&'a Input> for Span {
+    fn from(input: &'a Input) -> Self {
+        let full = input.full();
+        let full = full.as_ref();
+        let from = Position::build(input.range.0, full.lines());
+        let to = Position::build(input.range.0 + input.range.1, full.lines());
+        Self { from , to }
+    }
+}
+
+impl FancyCode {
+    pub fn new(input: &Input) -> Self {
         Self {
-            input: input.clone(),
-            entries: vec![DisplayInputEntry { span, desc: None }],
+            src: input.clone(),
+            entries: vec![],
         }
     }
-    pub fn with_desc(mut self, desc: impl Into<DisplayString>) -> Self {
-        self.entries[0].desc = Some(desc.into()); //TODO: I don't even remember what. Maybe more than one desc?
+    pub fn with_desc(mut self, span: &Input, desc: impl Into<DisplayString>, color: impl Color + Copy + Clone) -> Self {
+        let span = Span::from(span);
+        let color = format!("{}", color::Fg(color));
+        self.entries.push(DisplayInputEntry { span, desc: Some(desc.into()), color });
         self
     }
 
@@ -113,65 +173,55 @@ impl DisplayInput {
             "\\n"
         }
     }
-
-    /// Output: (line, column)
-    fn position<'a>(&self, lines: &[&'a str], span: &Input) -> (usize, usize) {
-        let mut offset = self.input.offset(span);
-        let mut line = 0;
-        let mut column = 0;
-
-        for (j, l) in lines.iter().enumerate() {
-            if offset <= l.len() {
-                line = j;
-                column = offset;
-                break;
-            } else {
-                offset = offset - l.len() - 1;
-                line = j + 1;
-            }
-        }
-
-        (line, column)
-    }
 }
 
-impl Display for DisplayInput {
+impl Display for FancyCode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
-        let input = &self.input;
-        let lines = input.as_ref().lines().collect::<Vec<_>>();
-        dbg!(&lines);
+        let lines = self.src.as_ref().lines().collect::<Vec<_>>();
+        if self.entries.is_empty() { return Ok(()) }
 
-        for entry in self.entries.iter() {
-            let (line, column) = self.position(&lines, &entry.span);
-            let len = std::cmp::max(1, entry.span.len());
+        let span = self.entries.iter()
+            .map(|entry| entry.span)
+            .fold1(|acc, span| {
+                let from = if acc.from < span.from { acc.from } else { span.from };
+                let to = if acc.to > span.to { acc.to } else { span.to };
 
-            if line > 0 {
-                if let Some(prev) = lines.get(line - 1) {
-                    write!(f, "{}", format!("{}  | ", line - 1).cyan())?;
-                    write!(f, "{}", (prev).bright_white())?;
-                    writeln!(f, "{}", "\\n".bright_black())?;
+                Span { from, to }
+            }).unwrap(); // is not empty
+
+        let line_digits = span.to.line.to_string().len() + 1;
+        let lines = &lines[span.from.line..=span.to.line];
+
+        for (ln, line) in lines.iter().enumerate() {
+            let ln = ln + span.from.line;
+            let col = line.len();
+            write!(f, "{}{: >width$} |{}{}{}", color::Fg(color::Cyan), ln, color::Fg(color::LightWhite), style::Bold, line, width=line_digits)?;
+            writeln!(f, "{}{}{}{}", style::Reset, color::Fg(color::LightBlack), Self::eol(ln, lines), style::Reset)?;
+            for entry in self.entries.iter().filter(|entry| {
+                entry.span.from.line <= ln && ln <= entry.span.to.line
+            }) {
+                write!(f, "{}{: >width$} |{}", color::Fg(color::Cyan), "~", style::Reset, width=line_digits)?;
+                let &from = &entry.span.from;
+                let &to = &entry.span.to;
+                let ws_len = if ln == from.line { from.column } else { 0 };
+
+                dbg!(&to.column);
+                let u_len = if ln == to.line && ln != from.line {
+                    1 + to.column - ws_len
+                } else if ln == to.line {
+                    std::cmp::max(1, to.column - ws_len)
                 }
-            }
+                else { 1 + col - ws_len };
 
-            write!(f, "{}", format!("{}  | ", line).cyan())?;
-            if let Some(this) = lines.get(line) {
-                write!(f, "{}", this.bright_white())?;
-            }
-            writeln!(f, "{}", Self::eol(line, &lines).bright_black())?;
-            write!(f, "{}", "   | ".cyan())?;
-            if column > 0 {
-                write!(f, "{}", &std::iter::repeat(' ').take(column).collect::<String>())?;
-            }
-
-            let underscore = std::iter::repeat("^").take(len).collect::<String>().normal();
-
-            let desc = entry.desc.clone().unwrap_or_default();
-            writeln!(f, "{} {}", underscore, &desc.bold())?;
-            if let Some(next) = lines.get(line + 1) {
-                write!(f, "{}", format!("{}  | ", line + 1).cyan())?;
-                write!(f, "{}", (next).bright_white())?;
-                writeln!(f, "{}", Self::eol(line + 1, &lines).bright_black())?;
-            }
+                write!(f, "{:width$}", "", width = ws_len)?;
+                write!(f, "{}{:^>width$}", &entry.color, "", width = u_len)?;
+                if ln == from.line {
+                    if let Some(desc) = &entry.desc {
+                        write!(f, " {}", desc)?;
+                    }
+                }
+                writeln!(f, "{}", style::Reset)?;
+            };
         }
 
         Ok(())
