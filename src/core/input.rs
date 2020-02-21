@@ -7,6 +7,14 @@ pub struct Input {
     pub(crate) range: (usize, usize), // pos, len
 }
 
+#[cfg(test)]
+impl Input {
+    pub fn test(src: &'static str, range: (usize, usize)) -> Self {
+        let src: Arc<str> = Arc::from(src);
+        Self { src, range }
+    }
+}
+
 impl std::fmt::Debug for Input {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.as_ref().fmt(f)?;
@@ -38,6 +46,17 @@ impl AsRef<str> for Input {
     }
 }
 
+use unicode_segmentation::{UnicodeSegmentation, Graphemes, GraphemeIndices};
+impl Input {
+    pub fn graphemes(&self) -> Graphemes {
+        self.as_ref().graphemes(true)
+    }
+
+    pub fn graphemes_idx(&self) -> GraphemeIndices {
+        self.as_ref().grapheme_indices(true)
+    }
+}
+
 impl Input {
     pub fn full(&self) -> Input {
         let src = self.src.clone();
@@ -65,7 +84,8 @@ impl Input {
         self.as_ref().chars().next()
     }
 
-    pub fn chomp(&mut self, len: usize) -> Self {
+    /// Try use utf8 oriented parsers instead
+    pub fn chomp_chars(&mut self, len: usize) -> Self {
         let len = std::cmp::min(len, self.len());
         let src = self.src.clone();
         let range = (self.range.0, len);
@@ -101,7 +121,7 @@ mod tests {
     #[test]
     fn input_1_chomp_0() {
         let mut i: Input = "(foo)".into();
-        let j = i.chomp(0);
+        let j = i.chomp_chars(0);
 
         assert_eq!(i.as_ref(), "(foo)");
         assert_eq!(i.peek_str(5), "(foo)");
@@ -131,7 +151,7 @@ mod tests {
     #[test]
     fn input_2_chomp_1() {
         let mut i: Input = "(foo)".into();
-        let j = i.chomp(1);
+        let j = i.chomp_chars(1);
 
         assert_eq!(i.as_ref(), "foo)");
         assert_eq!(i.len(), 4);
@@ -163,7 +183,7 @@ mod tests {
     #[test]
     fn input_3_chomp_2() {
         let mut i: Input = "(foo)".into();
-        let j = i.chomp(2);
+        let j = i.chomp_chars(2);
 
         assert_eq!(i.as_ref(), "oo)");
         assert_eq!(i.len(), 3);
@@ -196,7 +216,7 @@ mod tests {
     #[test]
     fn input_4_chomp_999() {
         let mut i: Input = "(foo)".into();
-        let j = i.chomp(999);
+        let j = i.chomp_chars(999);
 
         assert_eq!(i.as_ref(), "");
         assert_eq!(i.len(), 0);

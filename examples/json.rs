@@ -63,14 +63,16 @@ mod cst {
     }
 
     fn ws() -> impl Parser {
-        chomp_while(Json::WS, |c| c.is_whitespace())
+        recognize(Json::WS, chomp_while( |c| {
+            c.chars().all(|c| c.is_whitespace())
+        }))
     }
 
-    fn is_newline(c: char) -> bool {
-        c == '\n' || c == '\r'
+    fn is_newline(c: &str) -> bool {
+        c == "\r\n" || c == "\n"
     }
 
-    fn is_not_newline(c: char) -> bool {
+    fn is_not_newline(c: &str) -> bool {
         !is_newline(c)
     }
 
@@ -88,7 +90,7 @@ mod cst {
     #[alder_test]
     fn comment() -> impl Parser {
         v_node(Json::Comment, |state| match state.input.peek_str(2) {
-            "//" => state.add(chomp_while(Json::InlineComment, is_not_newline)),
+            "//" => state.add(recognize(Json::InlineComment, chomp_while(is_not_newline))),
             "/*" => state.add(multiline_comment()),
             _ => state.add(raise(Problem::InvalidTokenComment, 1)),
         })
@@ -98,7 +100,7 @@ mod cst {
         node(Json::MultilineComment, |state| loop {
             match state.input.peek_str(2) {
                 "*/" => {
-                    state.input.chomp(2);
+                    state.input.chomp_chars(2);
                     break;
                 }
                 "" => {
@@ -106,7 +108,7 @@ mod cst {
                     break;
                 }
                 _ => {
-                    state.input.chomp(1);
+                    state.input.chomp_chars(1);
                 }
             }
         })
@@ -175,7 +177,7 @@ mod cst {
     pub fn string() -> impl Parser {
         no_extra(node(Json::String, |state| {
             state.add("\"");
-            state.add(chomp_while(Json::Value, |c| c != '"' && c != '\n'));
+            state.add(recognize(Json::Value,chomp_while( |c| c != "\"" && is_not_newline(c))));
             state.add("\"");
         }))
     }

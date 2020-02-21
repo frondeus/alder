@@ -22,7 +22,7 @@ fn node_inner(name: NodeId, alias: Vec<NodeId>, f: impl Fn(&mut State)) -> impl 
         let rest = &state.input;
         let index = n.span.offset(rest);
         let len = index;
-        n.span = n.span.chomp(len);
+        n.span = n.span.chomp_chars(len);
         n
     }
 }

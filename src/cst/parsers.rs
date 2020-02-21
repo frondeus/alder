@@ -7,6 +7,7 @@ mod problem;
 
 pub use extra::*;
 pub use lexer::*;
+pub use lexer::utf::*;
 pub use node::*;
 pub use problem::*;
 
