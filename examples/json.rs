@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 // First we create the loseless parser
+#[rustfmt::skip]
 mod cst {
     use alder::*;
 
@@ -75,14 +76,14 @@ mod cst {
 
     /// // fooo
     /**
-                                                // fooo
-                                                rest
-                                            */
+        // fooo
+        rest
+    */
     /**
-                                                /* foo
-                                                bar
-                                                baz */
-                                            */
+        /* foo
+        bar
+        baz */
+    */
     /// /* foo
     #[alder_test]
     fn comment() -> impl Parser {
@@ -119,34 +120,34 @@ mod cst {
     /// ["foo"]
     /// ["  foo   "]
     /**
-                                                {
-                                                    "true": false,
-                                                    "false": true
-                                                }
-                                            */
+        {
+            "true": false,
+            "false": true
+        }
+    */
     /// [trua, falsa]
     /// [truadsadsa, falsa]
     /**
-                                                {
-                                                    "a": "foo,
-                                                    "b": "bar",
-                                                    "c": "baz"
-                                                }
-                                            */
+        {
+            "a": "foo,
+            "b": "bar",
+            "c": "baz"
+        }
+    */
     /**
-                                                {
-                                                    "a": "foo", // Here
-                                                    "b": /* Here */ "bar",
-                                                    /*
-                                                        HERE
-                                                        */
-                                                    "c": "baz"
-                                                }
-                                            */
+        {
+            "a": "foo", // Here
+            "b": /* Here */ "bar",
+            /*
+                HERE
+                */
+            "c": "baz"
+        }
+    */
     /**
-                                                [true, / invalid comment
-                                                false]
-                                            */
+        [true, / invalid comment
+        false]
+    */
     #[alder_test]
     pub fn value() -> impl Parser {
         with_extra(
