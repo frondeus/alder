@@ -10,6 +10,19 @@
 Hand written recursive descent and non-backtracking parsing "combinator" library designed with nice error in mind
 and lossless data.
 
+### Goals
+* [ ] Nice informative errors with contexts.
+* [ ] Almost no backtracking
+* [ ] Lossless tree generation (for formatters and IDE approach)
+* [ ] AST generation based on CST (some macro and trait magic)
+
+I'm somehow inspired by [this post](https://matklad.github.io/2018/06/06/modern-parser-generator.html). It's about parser generators but I prefer writing them manually.
+
+### TODO
+* [ ] UTF-8 support
+* [ ] Documentation (right now I have only WIP JSON example)
+* [ ] Maybe incremental parsing...
+
 ## Install
 Use cargo-edit:
 ```sh
