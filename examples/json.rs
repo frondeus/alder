@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 // First we create the loseless parser
 #[rustfmt::skip]
 mod cst {
@@ -89,26 +90,31 @@ mod cst {
     /// /* foo
     #[alder_test]
     fn comment() -> impl Parser {
-        v_node(Json::Comment, |state| match state.input.peek_str(2) {
-            "//" => state.add(recognize(Json::InlineComment, chomp_while(is_not_newline))),
-            "/*" => state.add(multiline_comment()),
-            _ => state.add(raise(Problem::InvalidTokenComment, 1)),
-        })
+        v_node(Json::Comment,
+               |state| match peek(2).parse(state) {
+                   Some(input) => match input.as_ref() {
+                       "//" => state.add(recognize(Json::InlineComment, chomp_while(is_not_newline))),
+                       "/*" => state.add(multiline_comment()),
+                       _ => state.add(raise(Problem::InvalidTokenComment, 1)),
+                   },
+                   None => state.add(raise(Problem::InvalidTokenComment, 0))
+               }
+        )
     }
 
     fn multiline_comment() -> impl Parser {
         node(Json::MultilineComment, |state| loop {
-            match state.input.peek_str(2) {
-                "*/" => {
-                    state.input.chomp_chars(2);
-                    break;
-                }
-                "" => {
+            match peek(2).parse(state) {
+                None => {
                     state.add(raise(Problem::UnexpectedEOFComment, 0));
                     break;
-                }
-                _ => {
-                    state.input.chomp_chars(1);
+                },
+                Some(input) => match input.as_ref() {
+                    "*/" => {
+                        state.input.chomp_chars(2);
+                        break;
+                    },
+                    _ => { state.input.chomp_chars(1); }
                 }
             }
         })

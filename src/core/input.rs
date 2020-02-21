@@ -46,12 +46,8 @@ impl AsRef<str> for Input {
     }
 }
 
-use unicode_segmentation::{UnicodeSegmentation, Graphemes, GraphemeIndices};
+use unicode_segmentation::{UnicodeSegmentation, GraphemeIndices};
 impl Input {
-    pub fn graphemes(&self) -> Graphemes {
-        self.as_ref().graphemes(true)
-    }
-
     pub fn graphemes_idx(&self) -> GraphemeIndices {
         self.as_ref().grapheme_indices(true)
     }
@@ -73,13 +69,7 @@ impl Input {
         self.len() == 0
     }
 
-    pub fn peek_str(&self, len: usize) -> &str {
-        let len = std::cmp::min(len, self.len());
-        let from = self.range.0;
-        let to = from + len;
-        &self.src[from..to]
-    }
-
+    //TODO: #[deprecated(since = "0.4.0", note = "Use utf::peek(1) instead")]
     pub fn peek(&self) -> Option<char> {
         self.as_ref().chars().next()
     }
@@ -104,9 +94,6 @@ mod tests {
         let i: Input = "(foo)".into();
 
         assert_eq!(i.as_ref(), "(foo)", "as_ref");
-        assert_eq!(i.peek_str(5), "(foo)", "peek_5");
-        assert_eq!(i.peek_str(4), "(foo", "peek_4");
-        assert_eq!(i.peek_str(3), "(fo", "peek_3");
         assert_eq!(i.len(), 5, "len");
 
         assert_eq!(
@@ -124,9 +111,6 @@ mod tests {
         let j = i.chomp_chars(0);
 
         assert_eq!(i.as_ref(), "(foo)");
-        assert_eq!(i.peek_str(5), "(foo)");
-        assert_eq!(i.peek_str(4), "(foo");
-        assert_eq!(i.peek_str(3), "(fo");
         assert_eq!(i.len(), 5);
 
         assert_eq!(
@@ -155,9 +139,6 @@ mod tests {
 
         assert_eq!(i.as_ref(), "foo)");
         assert_eq!(i.len(), 4);
-        assert_eq!(i.peek_str(4), "foo)");
-        assert_eq!(i.peek_str(3), "foo");
-        assert_eq!(i.peek_str(2), "fo");
 
         assert_eq!(
             i,
@@ -169,7 +150,6 @@ mod tests {
 
         assert_eq!(j.as_ref(), "(", "j as_ref");
         assert_eq!(j.len(), 1, "j len");
-        assert_eq!(j.peek_str(1), "(", "j peek 1");
 
         assert_eq!(
             j,
@@ -187,9 +167,6 @@ mod tests {
 
         assert_eq!(i.as_ref(), "oo)");
         assert_eq!(i.len(), 3);
-        assert_eq!(i.peek_str(3), "oo)");
-        assert_eq!(i.peek_str(2), "oo");
-        assert_eq!(i.peek_str(1), "o");
 
         assert_eq!(
             i,
@@ -201,8 +178,6 @@ mod tests {
 
         assert_eq!(j.as_ref(), "(f", "j as_ref");
         assert_eq!(j.len(), 2, "j len");
-        assert_eq!(j.peek_str(2), "(f", "j peek 2");
-        assert_eq!(j.peek_str(1), "(", "j peek 1");
 
         assert_eq!(
             j,
@@ -220,9 +195,6 @@ mod tests {
 
         assert_eq!(i.as_ref(), "");
         assert_eq!(i.len(), 0);
-        assert_eq!(i.peek_str(3), "");
-        assert_eq!(i.peek_str(2), "");
-        assert_eq!(i.peek_str(1), "");
 
         assert_eq!(
             i,
@@ -234,8 +206,6 @@ mod tests {
 
         assert_eq!(j.as_ref(), "(foo)", "j as_ref");
         assert_eq!(j.len(), 5, "j len");
-        assert_eq!(j.peek_str(2), "(f", "j peek 2");
-        assert_eq!(j.peek_str(1), "(", "j peek 1");
 
         assert_eq!(
             j,
