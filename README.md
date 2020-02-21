@@ -10,6 +10,23 @@
 Hand written recursive descent and non-backtracking parsing "combinator" library designed with nice error in mind
 and lossless data.
 
+## Install
+Use cargo-edit:
+```sh
+cargo add alder
+```
+
+Or add it manually:
+```toml
+alder =  "0.2.0"
+```
+
+You may want to enable a derive feature as well:
+
+```toml
+alder = { version = "0.2.0" , features = ["derive"] }
+```
+
 ## Example
 ```rust
 // Doc tests are treated as a test cases for snapshots.
