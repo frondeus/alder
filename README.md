@@ -11,15 +11,15 @@ Hand written recursive descent and non-backtracking parsing "combinator" library
 and lossless data.
 
 ### Goals
+* [x] Almost no backtracking
+* [x] Lossless tree generation (for formatters and IDE approach)
+* [x] UTF-8 support
 * [ ] Nice informative errors with contexts.
-* [ ] Almost no backtracking
-* [ ] Lossless tree generation (for formatters and IDE approach)
 * [ ] AST generation based on CST (some macro and trait magic)
 
 I'm somehow inspired by [this post](https://matklad.github.io/2018/06/06/modern-parser-generator.html). It's about parser generators but I prefer writing them manually.
 
 ### TODO
-* [ ] UTF-8 support
 * [ ] Documentation (right now I have only WIP JSON example)
 * [ ] Maybe incremental parsing...
 
@@ -31,13 +31,13 @@ cargo add alder
 
 Or add it manually:
 ```toml
-alder =  "0.3.0"
+alder =  "0.4.0"
 ```
 
 You may want to enable a derive feature as well:
 
 ```toml
-alder = { version = "0.3.0" , features = ["derive"] }
+alder = { version = "0.4.0" , features = ["derive"] }
 ```
 
 ## Example
@@ -65,41 +65,40 @@ alder = { version = "0.3.0" , features = ["derive"] }
 */
 #[alder_test]
 fn array() -> impl Parser {
-    // with_extra injects whitespace parser before and after every token.
-    // Unless you explicitly told parser not to do it (for example in strings).
-    with_extra(ws(), node(Json::Array, |state| {
+    with_extra(
+        extra(),
+        node(Json::Array, |state| {
         state.add("[");
-        match state.input.peek() {
-            Some(']') => (),
+        match peek(1).parse(state).as_ref() {
+            "]" => (),
             _ => 'outer: loop {
-                state.add(value());
-                'inner: loop { // Until we find either ']' or ','
-                    match state.input.peek() {
-                        Some(']') => {
-                            break 'outer;
-                        }
-                        Some(',') => {
-                            // If there was a problem and we find `,` we try to process rest of the array normally.
-                            state.add(recover(","));
-
-                            // Trailing comma
-                            if let Some(']') = state.input.peek() { 
-                                break 'outer;
-                            }
-                            break 'inner;
-                        },
-                        // EOF
-                        None => { 
-                            state.add(raise(Problem::InvalidTokenArray, 1));
-                            break 'outer;
-                        },
-                        _ => state.add(raise(Problem::InvalidTokenArray, 1)),
-                    };
+            state.add(value());
+            'inner: loop {
+                // Until we find either ']' or ','
+                match peek(1).parse(state).as_ref() {
+                "]" => {
+                    break 'outer;
                 }
+                "," => {
+                    state.add(recover(","));
+                    if let "]" = peek(1).parse(state).as_ref() {
+                    // Trailing comma
+                    break 'outer;
+                    }
+                    break 'inner;
+                }
+                "" => { // EOF
+                    state.add(raise(Problem::InvalidTokenArray, 1));
+                    break 'outer;
+                }
+                _ => state.add(raise(Problem::InvalidTokenArray, 1)),
+                };
+            }
             },
         }
         state.add(recover("]"));
-    }))
+        }),
+    )
 }
 ```
 

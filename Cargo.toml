@@ -1,6 +1,6 @@
 [package]
 name = "alder"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Wojciech Polak <frondeus@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -20,7 +20,7 @@ members = ["derive"]
 
 [dependencies]
 # Workspace
-alder-derive = { path = "derive", version = "=0.2.1", optional = true }
+alder-derive = { path = "derive", version = "=0.2.2", optional = true }
 
 # Crates.io
 derive_more = "0.99.2"
@@ -29,6 +29,6 @@ termion = "1.5.5"
 unicode-segmentation = "1.6.0"
 
 [dev-dependencies]
-alder-derive = { path = "derive", version = "=0.2.1" }
+alder-derive = { path = "derive", version = "=0.2.2" }
 test-case = "1.0.0"
 

@@ -12,13 +12,14 @@ git commit
 
 cd derive/ || exit
 cargo publish --dry-run || exit
-cd ../
-cargo publish --dry-run || exit
 
-cd derive/ || exit
 cargo publish
 
 sleep 3
 
 cd ../
+cargo publish --dry-run || exit
+
+sleep 3
+
 cargo publish
