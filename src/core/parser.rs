@@ -4,7 +4,9 @@ pub trait Parser<T = Node> {
     fn parse(&self, state: &mut State) -> T;
 
     fn map<F>(self, f: F) -> Map<Self, F, T>
-        where Self: Sized {
+    where
+        Self: Sized,
+    {
         Map::new(self, f)
     }
 

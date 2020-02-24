@@ -50,12 +50,17 @@ mod cst {
         InvalidTokenComment,
     }
 
+    fn is_whitespace(s: &str) -> bool {
+        !s.is_empty() && s.chars().all(|c| c.is_whitespace())
+    }
+
     fn extra() -> std::sync::Arc<dyn Parser> {
         v_node(NodeId::EXTRA, |state| {
             while !state.panic {
-                match state.input.peek() {
-                    Some(s) if s.is_whitespace() => state.add(ws()),
-                    Some('/') => state.add(comment()),
+                match peek(1).parse(state).as_ref() {
+                    "" => break,
+                    s if is_whitespace(s) => state.add(ws()),
+                    "/" => state.add(comment()),
                     _ => break,
                 }
             }
@@ -65,7 +70,7 @@ mod cst {
 
     fn ws() -> impl Parser {
         recognize(Json::WS, chomp_while( |c| {
-            c.chars().all(|c| c.is_whitespace())
+            is_whitespace(c)
         }))
     }
 
@@ -91,30 +96,27 @@ mod cst {
     #[alder_test]
     fn comment() -> impl Parser {
         v_node(Json::Comment,
-               |state| match peek(2).parse(state) {
-                   Some(input) => match input.as_ref() {
-                       "//" => state.add(recognize(Json::InlineComment, chomp_while(is_not_newline))),
-                       "/*" => state.add(multiline_comment()),
-                       _ => state.add(raise(Problem::InvalidTokenComment, 1)),
-                   },
-                   None => state.add(raise(Problem::InvalidTokenComment, 0))
+               |state| match peek(2).parse(state).as_ref() {
+                   "//" => state.add(recognize(Json::InlineComment, chomp_while(is_not_newline))),
+                   "/*" => state.add(multiline_comment()),
+                   _ => state.add(raise(Problem::InvalidTokenComment, 1)),
                }
         )
     }
 
     fn multiline_comment() -> impl Parser {
         node(Json::MultilineComment, |state| loop {
-            match peek(2).parse(state) {
-                None => {
+            match peek(2).parse(state).as_ref() {
+                "" => {
                     state.add(raise(Problem::UnexpectedEOFComment, 0));
                     break;
                 },
-                Some(input) => match input.as_ref() {
-                    "*/" => {
-                        state.input.chomp_chars(2);
-                        break;
-                    },
-                    _ => { state.input.chomp_chars(1); }
+                "*/" => {
+                    chomp(2).parse(state);
+                    break;
+                },
+                _ => {
+                    chomp(1).parse(state);
                 }
             }
         })
@@ -161,11 +163,11 @@ mod cst {
         with_extra(
             extra(),
             v_node(Json::Value, |state| {
-                match state.input.peek() {
-                    Some('t') | Some('f') => state.add(boolean()),
-                    Some('[') => state.add(array()),
-                    Some('{') => state.add(object()),
-                    Some('"') => state.add(string()),
+                match peek(1).parse(state).as_ref() {
+                    "t" | "f" => state.add(boolean()),
+                    "[" => state.add(array()),
+                    "{" => state.add(object()),
+                    "\"" => state.add(string()),
                     _ => state.add(raise(Problem::InvalidTokenValue, 1)),
                 };
             }),
@@ -194,9 +196,9 @@ mod cst {
     /// tdupa
     #[alder_test]
     fn boolean() -> impl Parser {
-        v_node(Json::Boolean, |state| match state.input.peek() {
-            Some('t') => state.add("true"),
-            Some('f') => state.add("false"),
+        v_node(Json::Boolean, |state| match peek(1).parse(state).as_ref() {
+            "t" => state.add("true"),
+            "f" => state.add("false"),
             _ => state.add(raise(Problem::InvalidBoolean, 1)),
         })
     }
@@ -216,27 +218,26 @@ mod cst {
             extra(),
             node(Json::Object, |state| {
                 state.add("{");
-                match state.input.peek() {
-                    Some('}') => (),
+                match peek(1).parse(state).as_ref() {
+                    "}" => (),
                     _ => 'outer: loop {
                         state.add(field(Json::Key, string()));
                         state.add(recover(":"));
                         state.add(value());
                         'inner: loop {
-                            match state.input.peek() {
-                                Some('}') => {
+                            match peek(1).parse(state).as_ref() {
+                                "}" => {
                                     break 'outer;
                                 }
-                                Some(',') => {
+                                "," => {
                                     state.add(recover(","));
-                                    if let Some('}') = state.input.peek() {
+                                    if let "}" = peek(1).parse(state).as_ref() {
                                         // Trailing comma
                                         break 'outer;
                                     }
                                     break 'inner;
                                 }
-                                None => {
-                                    // EOF
+                                "" => { // EOF
                                     state.add(raise(Problem::InvalidTokenObject, 1));
                                     break 'outer;
                                 }
@@ -267,26 +268,25 @@ mod cst {
             extra(),
             node(Json::Array, |state| {
                 state.add("[");
-                match state.input.peek() {
-                    Some(']') => (),
+                match peek(1).parse(state).as_ref() {
+                    "]" => (),
                     _ => 'outer: loop {
                         state.add(value());
                         'inner: loop {
                             // Until we find either ']' or ','
-                            match state.input.peek() {
-                                Some(']') => {
+                            match peek(1).parse(state).as_ref() {
+                                "]" => {
                                     break 'outer;
                                 }
-                                Some(',') => {
+                                "," => {
                                     state.add(recover(","));
-                                    if let Some(']') = state.input.peek() {
+                                    if let "]" = peek(1).parse(state).as_ref() {
                                         // Trailing comma
                                         break 'outer;
                                     }
                                     break 'inner;
                                 }
-                                None => {
-                                    // EOF
+                                "" => { // EOF
                                     state.add(raise(Problem::InvalidTokenArray, 1));
                                     break 'outer;
                                 }

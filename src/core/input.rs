@@ -46,7 +46,7 @@ impl AsRef<str> for Input {
     }
 }
 
-use unicode_segmentation::{UnicodeSegmentation, GraphemeIndices};
+use unicode_segmentation::{GraphemeIndices, UnicodeSegmentation};
 impl Input {
     pub fn graphemes_idx(&self) -> GraphemeIndices {
         self.as_ref().grapheme_indices(true)
@@ -69,13 +69,8 @@ impl Input {
         self.len() == 0
     }
 
-    //TODO: #[deprecated(since = "0.4.0", note = "Use utf::peek(1) instead")]
-    pub fn peek(&self) -> Option<char> {
-        self.as_ref().chars().next()
-    }
-
     /// Try use utf8 oriented parsers instead
-    pub fn chomp_chars(&mut self, len: usize) -> Self {
+    pub(crate) fn chomp_chars(&mut self, len: usize) -> Self {
         let len = std::cmp::min(len, self.len());
         let src = self.src.clone();
         let range = (self.range.0, len);
