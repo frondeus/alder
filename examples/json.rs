@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-// First we create the loseless parser
+// First we create the lossless parser
 #[rustfmt::skip]
 mod cst {
     use alder::*;
@@ -57,7 +57,7 @@ mod cst {
     fn extra() -> std::sync::Arc<dyn Parser> {
         v_node(NodeId::EXTRA, |state| {
             while !state.panic {
-                match peek(1).parse(state).as_ref() {
+                match state.peek(1).as_ref() {
                     "" => break,
                     s if is_whitespace(s) => state.add(ws()),
                     "/" => state.add(comment()),
@@ -96,7 +96,7 @@ mod cst {
     #[alder_test]
     fn comment() -> impl Parser {
         v_node(Json::Comment,
-               |state| match peek(2).parse(state).as_ref() {
+               |state| match state.peek(2).as_ref() {
                    "//" => state.add(recognize(Json::InlineComment, chomp_while(is_not_newline))),
                    "/*" => state.add(multiline_comment()),
                    _ => state.add(raise(Problem::InvalidTokenComment, 1)),
@@ -106,17 +106,17 @@ mod cst {
 
     fn multiline_comment() -> impl Parser {
         node(Json::MultilineComment, |state| loop {
-            match peek(2).parse(state).as_ref() {
+            match state.peek(2).as_ref() {
                 "" => {
                     state.add(raise(Problem::UnexpectedEOFComment, 0));
                     break;
                 },
                 "*/" => {
-                    chomp(2).parse(state);
+                    state.chomp(2);
                     break;
                 },
                 _ => {
-                    chomp(1).parse(state);
+                    state.chomp(1);
                 }
             }
         })
@@ -163,7 +163,7 @@ mod cst {
         with_extra(
             extra(),
             v_node(Json::Value, |state| {
-                match peek(1).parse(state).as_ref() {
+                match state.peek(1).as_ref() {
                     "t" | "f" => state.add(boolean()),
                     "[" => state.add(array()),
                     "{" => state.add(object()),
@@ -196,7 +196,7 @@ mod cst {
     /// tdupa
     #[alder_test]
     fn boolean() -> impl Parser {
-        v_node(Json::Boolean, |state| match peek(1).parse(state).as_ref() {
+        v_node(Json::Boolean, |state| match state.peek(1).as_ref() {
             "t" => state.add("true"),
             "f" => state.add("false"),
             _ => state.add(raise(Problem::InvalidBoolean, 1)),
@@ -218,20 +218,20 @@ mod cst {
             extra(),
             node(Json::Object, |state| {
                 state.add("{");
-                match peek(1).parse(state).as_ref() {
+                match state.peek(1).as_ref() {
                     "}" => (),
                     _ => 'outer: loop {
                         state.add(field(Json::Key, string()));
                         state.add(recover(":"));
                         state.add(value());
                         'inner: loop {
-                            match peek(1).parse(state).as_ref() {
+                            match state.peek(1).as_ref() {
                                 "}" => {
                                     break 'outer;
                                 }
                                 "," => {
                                     state.add(recover(","));
-                                    if let "}" = peek(1).parse(state).as_ref() {
+                                    if let "}" = state.peek(1).as_ref() {
                                         // Trailing comma
                                         break 'outer;
                                     }
@@ -268,19 +268,19 @@ mod cst {
             extra(),
             node(Json::Array, |state| {
                 state.add("[");
-                match peek(1).parse(state).as_ref() {
+                match state.peek(1).as_ref() {
                     "]" => (),
                     _ => 'outer: loop {
                         state.add(value());
                         'inner: loop {
                             // Until we find either ']' or ','
-                            match peek(1).parse(state).as_ref() {
+                            match state.peek(1).as_ref() {
                                 "]" => {
                                     break 'outer;
                                 }
                                 "," => {
                                     state.add(recover(","));
-                                    if let "]" = peek(1).parse(state).as_ref() {
+                                    if let "]" = state.peek(1).as_ref() {
                                         // Trailing comma
                                         break 'outer;
                                     }
@@ -500,4 +500,4 @@ mod ast {
     }
 }
 
-fn main() {}
+fn main() { }

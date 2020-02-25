@@ -11,6 +11,46 @@ enum LexerError {
 pub mod utf {
     use super::*;
 
+    pub trait StateExt {
+        fn peek_nth(&mut self, len: usize) -> Input;
+
+        fn nth(&mut self, len: usize) -> Input;
+
+        fn next(&mut self) -> Input;
+
+        fn peek(&mut self, len: usize) -> Input;
+
+        fn chomp(&mut self, len: usize) -> Input;
+
+        fn chomp_while(&mut self, f: impl Fn(&str) -> bool) -> Input;
+    }
+
+    impl StateExt for State {
+        fn peek_nth(&mut self, len: usize) -> Input {
+            peek_nth(len).parse(self)
+        }
+
+        fn nth(&mut self, len: usize) -> Input {
+            nth(len).parse(self)
+        }
+
+        fn next(&mut self) -> Input {
+            next().parse(self)
+        }
+
+        fn peek(&mut self, len: usize) -> Input {
+            peek(len).parse(self)
+        }
+
+        fn chomp(&mut self, len: usize) -> Input {
+            chomp(len).parse(self)
+        }
+
+        fn chomp_while(&mut self, f: impl Fn(&str) -> bool) -> Input {
+            chomp_while(f).parse(self)
+        }
+    }
+
     pub fn peek_nth(len: usize) -> impl Parser<Input> {
         move |state: &mut State| {
             let mut iter = state.input.graphemes_idx();
@@ -137,6 +177,24 @@ pub fn token(token: &'static str) -> impl Parser {
                 Node::token(n)
             }
             n => raise(LexerError::UnexpectedToken(token), n.len()).parse(state),
+        }
+    }
+}
+
+pub fn recognize1(name: NodeId, parser: impl Parser<Input>, problem: impl Problem + Clone + 'static) -> impl Parser {
+    move |state: &mut State| {
+        let output = parser.parse(state);
+
+        match output {
+            result if !result.is_empty() => Node {
+                name,
+                span: result,
+                children: vec![],
+                alias: vec![],
+            },
+            _ => {
+                raise(problem.clone(), 0).parse(state)
+            },
         }
     }
 }
