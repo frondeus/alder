@@ -500,4 +500,4 @@ mod ast {
     }
 }
 
-fn main() { }
+fn main() {}

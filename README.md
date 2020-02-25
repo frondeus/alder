@@ -31,13 +31,13 @@ cargo add alder
 
 Or add it manually:
 ```toml
-alder =  "0.4.0"
+alder =  "0.5.0"
 ```
 
 You may want to enable a derive feature as well:
 
 ```toml
-alder = { version = "0.4.0" , features = ["derive"] }
+alder = { version = "0.5.0" , features = ["derive"] }
 ```
 
 ## Example
@@ -68,35 +68,35 @@ fn array() -> impl Parser {
     with_extra(
         extra(),
         node(Json::Array, |state| {
-        state.add("[");
-        match peek(1).parse(state).as_ref() {
-            "]" => (),
-            _ => 'outer: loop {
-            state.add(value());
-            'inner: loop {
-                // Until we find either ']' or ','
-                match peek(1).parse(state).as_ref() {
-                "]" => {
-                    break 'outer;
-                }
-                "," => {
-                    state.add(recover(","));
-                    if let "]" = peek(1).parse(state).as_ref() {
-                    // Trailing comma
-                    break 'outer;
+            state.add("[");
+            match state.peek(1).as_ref() {
+                "]" => (),
+                _ => 'outer: loop {
+                    state.add(value());
+                    'inner: loop {
+                        // Until we find either ']' or ','
+                        match state.peek(1).as_ref() {
+                            "]" => {
+                                break 'outer;
+                            }
+                            "," => {
+                                state.add(recover(","));
+                                if let "]" = state.peek(1).as_ref() {
+                                    // Trailing comma
+                                    break 'outer;
+                                }
+                                break 'inner;
+                            }
+                            "" => { // EOF
+                                state.add(raise(Problem::InvalidTokenArray, 1));
+                                break 'outer;
+                            }
+                            _ => state.add(raise(Problem::InvalidTokenArray, 1)),
+                        };
                     }
-                    break 'inner;
-                }
-                "" => { // EOF
-                    state.add(raise(Problem::InvalidTokenArray, 1));
-                    break 'outer;
-                }
-                _ => state.add(raise(Problem::InvalidTokenArray, 1)),
-                };
+                },
             }
-            },
-        }
-        state.add(recover("]"));
+            state.add(recover("]"));
         }),
     )
 }

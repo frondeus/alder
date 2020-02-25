@@ -181,7 +181,11 @@ pub fn token(token: &'static str) -> impl Parser {
     }
 }
 
-pub fn recognize1(name: NodeId, parser: impl Parser<Input>, problem: impl Problem + Clone + 'static) -> impl Parser {
+pub fn recognize1(
+    name: NodeId,
+    parser: impl Parser<Input>,
+    problem: impl Problem + Clone + 'static,
+) -> impl Parser {
     move |state: &mut State| {
         let output = parser.parse(state);
 
@@ -192,9 +196,7 @@ pub fn recognize1(name: NodeId, parser: impl Parser<Input>, problem: impl Proble
                 children: vec![],
                 alias: vec![],
             },
-            _ => {
-                raise(problem.clone(), 0).parse(state)
-            },
+            _ => raise(problem.clone(), 0).parse(state),
         }
     }
 }
