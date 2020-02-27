@@ -1,6 +1,6 @@
 [package]
 name = "alder"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Wojciech Polak <frondeus@gmail.com>"]
 edition = "2018"
 license = "MIT"
