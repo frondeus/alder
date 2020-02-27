@@ -99,6 +99,26 @@ pub mod utf {
         }
     }
 
+    pub fn chomp_if(f: impl Fn(&str) -> bool) -> impl Parser<Input> {
+        move |state: &mut State| {
+            let current = peek_nth(0).parse(state);
+            let current = match current.as_ref() {
+                "" => return chomp(0).parse(state),
+                c => c,
+            };
+            let len = if f(current) { 1 } else { 0 };
+            chomp(len).parse(state)
+        }
+    }
+
+    pub fn chomp_until(f: impl Fn(&str) -> bool) -> impl Parser<Input> {
+        chomp_while(move |c| !f(c))
+    }
+
+    pub fn chomp_until_eof() -> impl Parser<Input> {
+        chomp_until(move |c| c == "")
+    }
+
     pub fn chomp_while(f: impl Fn(&str) -> bool) -> impl Parser<Input> {
         move |state: &mut State| {
             let mut len = 0usize;
@@ -150,6 +170,7 @@ pub mod utf {
         #[test_case(chomp(3), "a\u{310}e\u{301}o\u{308}\u{332}", "\r\n")]
         #[test_case(chomp(99), "a\u{310}e\u{301}o\u{308}\u{332}\r\n", "")]
         #[test_case(chomp_while(|c| { c != "\n" && c != "\r\n" }),               "a\u{310}e\u{301}o\u{308}\u{332}",  "\r\n")]
+        #[test_case(chomp_until(|c| { c == "\n" || c == "\r\n" }),               "a\u{310}e\u{301}o\u{308}\u{332}",  "\r\n")]
         fn test_parser(p: impl Parser<Input>, expected: &'static str, expected_rest: &'static str) {
             let mut state: State = INPUT.into();
             let actual = p.parse(&mut state);

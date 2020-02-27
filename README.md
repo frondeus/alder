@@ -20,6 +20,9 @@ and lossless data.
 I'm somehow inspired by [this post](https://matklad.github.io/2018/06/06/modern-parser-generator.html). It's about parser generators but I prefer writing them manually.
 
 ### TODO
+* [ ] Add the problem resolving in common parsers like `chomp_while`
+* [ ] Add more common parsers
+* [ ] Remove Arc if possible
 * [ ] Documentation (right now I have only WIP JSON example)
 * [ ] Maybe incremental parsing...
 
@@ -113,4 +116,10 @@ I was parsing Boolean when found issue:
 I was parsing Boolean when found issue:
  0 |[truadsadsa, falsa]\EOF
  ~ |             ^^^^^ I expected `false`
+```
+
+## Contribute
+Please use git-hooks.
+```sh
+cp .git-hooks/* .git/hooks/
 ```

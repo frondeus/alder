@@ -94,15 +94,15 @@ impl State {
 }
 
 impl State {
-    pub(crate) fn push_extra(&mut self, extra: std::sync::Arc<dyn Parser>) {
+    pub fn push_extra(&mut self, extra: std::sync::Arc<dyn Parser>) {
         self.extras.push(Some(extra));
     }
 
-    pub(crate) fn push_atomic(&mut self) {
+    pub fn push_atomic(&mut self) {
         self.extras.push(None);
     }
 
-    pub(crate) fn pop_extra(&mut self) {
+    pub fn pop_extra(&mut self) {
         self.extras.pop();
     }
 

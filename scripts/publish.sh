@@ -3,21 +3,21 @@
 cargo fmt --all
 cargo clippy --all-features --all-targets --all -- -D warnings || exit
 
-nvim derive/Cargo.toml
+#nvim derive/Cargo.toml
 nvim Cargo.toml
 nvim README.md
 
 git add .
 git commit
 
-cd derive/ || exit
-cargo publish --dry-run || exit
+#cd derive/ || exit
+#cargo publish --dry-run || exit
 
-cargo publish
+#cargo publish
 
-sleep 3
+#sleep 3
 
-cd ../
+#cd ../
 cargo publish --dry-run || exit
 
 sleep 3
