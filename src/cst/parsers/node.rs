@@ -4,8 +4,9 @@ pub fn none() -> impl Parser {
     node(NodeId::VIRTUAL, |_| ())
 }
 
-pub fn v_node(name: NodeId, f: impl Fn(&mut State)) -> impl Parser {
-    node_inner(NodeId::VIRTUAL, vec![name], f)
+pub fn v_node(name: impl Into<Option<NodeId>>, f: impl Fn(&mut State)) -> impl Parser {
+    let alias = name.into().into_iter().collect();
+    node_inner(NodeId::VIRTUAL, alias, f)
 }
 
 fn node_inner(name: NodeId, alias: Vec<NodeId>, f: impl Fn(&mut State)) -> impl Parser {

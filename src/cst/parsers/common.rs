@@ -1,4 +1,5 @@
 use crate::*;
+use unicode_xid::UnicodeXID;
 
 pub fn is_ws(s: &str) -> bool {
     match s {
@@ -22,7 +23,19 @@ pub fn is_line_ending(s: &str) -> bool {
 }
 
 pub fn is_hex(s: &str) -> bool {
-    s.chars().all(|c| c.is_ascii_hexdigit())
+    !s.is_empty() && s.chars().all(|c| c.is_ascii_hexdigit())
+}
+
+pub fn is_digits(s: &str) -> bool {
+    !s.is_empty() && s.chars().all(|c| c.is_ascii_digit())
+}
+
+pub fn is_xid_start(s: &str) -> bool {
+    !s.is_empty() && s.chars().all(|c| c.is_xid_start())
+}
+
+pub fn is_xid_continue(s: &str) -> bool {
+    !s.is_empty() && s.chars().all(|c| c.is_xid_continue())
 }
 
 pub fn ws0() -> impl Parser<Input> {
@@ -40,6 +53,9 @@ pub trait UtfExt {
     fn is_inline_ws(&self) -> bool;
     fn is_line_ending(&self) -> bool;
     fn is_hex(&self) -> bool;
+    fn is_digits(&self) -> bool;
+    fn is_xid_start(&self) -> bool;
+    fn is_xid_continue(&self) -> bool;
 }
 
 impl<'a> UtfExt for &'a str {
@@ -57,5 +73,17 @@ impl<'a> UtfExt for &'a str {
 
     fn is_hex(&self) -> bool {
         is_hex(self)
+    }
+
+    fn is_digits(&self) -> bool {
+        is_digits(self)
+    }
+
+    fn is_xid_start(&self) -> bool {
+        is_xid_start(self)
+    }
+
+    fn is_xid_continue(&self) -> bool {
+        is_xid_continue(self)
     }
 }
