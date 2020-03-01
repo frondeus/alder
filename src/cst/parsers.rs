@@ -4,6 +4,7 @@ mod common;
 mod extra;
 mod lexer;
 mod node;
+mod pratt;
 mod problem;
 
 pub use common::*;
@@ -11,6 +12,7 @@ pub use extra::*;
 pub use lexer::utf::*;
 pub use lexer::*;
 pub use node::*;
+pub use pratt::*;
 pub use problem::*;
 
 use std::marker::PhantomData;

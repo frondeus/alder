@@ -1,23 +1,40 @@
-pub fn snap(actual_debug: String, file: &str, module: &str, test_case_name: &str) {
+fn goto_workdir(file_path: impl AsRef<std::path::Path>) {
+    let file_path = file_path.as_ref();
+    let mut path = std::env::current_dir().expect("Current dir");
+    loop {
+        if file_path.exists() {
+            break;
+        }
+        path = path.parent().expect("Couldnt go up").into();
+
+        std::env::set_current_dir(&path).expect("Couldnt go up");
+    }
+}
+
+pub fn snap(actual_debug: String, file: &str, test_case_name: &str) {
     println!("{}", actual_debug);
 
     use std::io::Write;
-    let module = module.replace("::", "_");
-    let mut dir_path = std::path::PathBuf::from(file);
+    use std::path::PathBuf;
 
-    dir_path = dir_path.parent().expect("Parent directory").into();
+    let file_path = PathBuf::from(file);
+
+    goto_workdir(&file_path);
+
+    let mut dir_path = file_path.clone();
+    dir_path.set_extension("");
+    let file_name = dir_path.file_stem().expect("File_name");
+
+    let mut dir_path: PathBuf = file_path.parent().expect("Parent directory").into();
+
     dir_path.push("snaps");
-    let dir_path_str = dir_path.to_str().unwrap();
+    dir_path.push(file_name);
 
-    let path: std::path::PathBuf =
-        format!("{}/{}_{}.snap", dir_path_str, &module, test_case_name).into();
-    let new_path: std::path::PathBuf =
-        format!("{}/{}_{}.snap.new", dir_path_str, &module, test_case_name).into();
+    let path: std::path::PathBuf = dir_path.join(format!("{}.snap", test_case_name));
+    let new_path: std::path::PathBuf = dir_path.join(format!("{}.snap.new", test_case_name));
 
     if !path.exists() {
-        dbg!(&dir_path);
         let _r = std::fs::create_dir_all(&dir_path);
-        dbg!(&new_path);
         std::fs::File::create(&new_path)
             .and_then(|mut file| file.write_all(actual_debug.as_bytes()))
             .expect("Couldn't save snap");

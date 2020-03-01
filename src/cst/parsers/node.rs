@@ -19,12 +19,9 @@ fn node_inner(name: NodeId, alias: Vec<NodeId>, f: impl Fn(&mut State)) -> impl 
         };
         state.nodes.push(n);
         f(state);
-        let mut n = state.nodes.pop().expect("Node");
-        let rest = &state.input;
-        let index = n.span.offset(rest);
-        let len = index;
-        n.span = n.span.chomp_chars(len);
-        n
+        let mut res = state.nodes.pop().expect("Node");
+        res.recalc_span(state);
+        res
     }
 }
 

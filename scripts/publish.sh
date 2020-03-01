@@ -8,7 +8,7 @@ nvim Cargo.toml
 nvim README.md
 
 git add .
-git commit
+git commit --amend
 
 #cd derive/ || exit
 #cargo publish --dry-run || exit
@@ -23,3 +23,5 @@ cargo publish --dry-run || exit
 sleep 3
 
 cargo publish
+
+git push origin -u master --force-with-lease

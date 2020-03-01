@@ -86,3 +86,19 @@ impl Node {
         self.name == name || self.alias.iter().any(|alias| *alias == name)
     }
 }
+
+impl Node {
+    pub(crate) fn recalc_span(&mut self, state: &State) {
+        if let Some(first) = self.children.first() {
+            self.span.range.0 = first.span.range.0;
+        }
+        if let Some(last) = self.children.last() {
+            self.span.range.1 = last.span.range.0 - self.span.range.0 + last.span.range.1;
+        } else {
+            let rest = &state.input;
+            let index = self.span.offset(rest);
+            let len = index;
+            self.span = self.span.chomp_chars(len);
+        }
+    }
+}

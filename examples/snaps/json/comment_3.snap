@@ -2,7 +2,7 @@
 /* foo
 ```
 
-MULTILINECOMMENT (COMMENT): "/* foo"(0, 6)
+MULTILINECOMMENT (COMMENT): ""(6, 0)
     ERROR: ""(6, 0)
 
 PROBLEMS:

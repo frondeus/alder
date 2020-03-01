@@ -79,13 +79,25 @@ impl State {
         }
     }
 
+    pub fn add_node(&mut self, node: Node) {
+        if !self.parsing_extra && !self.panic {
+            self.add_extra();
+        }
+
+        self.add_node_inner(node);
+
+        if !self.parsing_extra && !self.panic {
+            self.add_extra();
+        }
+    }
+
     pub fn add(&mut self, parser: impl Parser) {
         if !self.parsing_extra && !self.panic {
             self.add_extra();
         }
 
         let node = parser.parse(self);
-        self.add_node(node);
+        self.add_node_inner(node);
 
         if !self.parsing_extra && !self.panic {
             self.add_extra();
@@ -106,7 +118,7 @@ impl State {
         self.extras.pop();
     }
 
-    pub(crate) fn add_node(&mut self, node: Node) {
+    pub(crate) fn add_node_inner(&mut self, node: Node) {
         let parent = self.node().expect("At least root");
 
         if node.is(NodeId::VIRTUAL) {
@@ -150,7 +162,7 @@ impl State {
             let extra = extra.clone();
             let mut extra_node = extra.parse(self);
             extra_node.add_alias(NodeId::EXTRA);
-            self.add_node(extra_node);
+            self.add_node_inner(extra_node);
             self.parsing_extra = false;
         }
     }
