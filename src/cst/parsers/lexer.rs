@@ -12,46 +12,46 @@ pub mod utf {
     use super::*;
 
     pub trait StateExt {
-        fn peek_nth(&mut self, len: usize) -> Input;
+        fn peek_nth(&mut self, len: usize) -> Span;
 
-        fn nth(&mut self, len: usize) -> Input;
+        fn nth(&mut self, len: usize) -> Span;
 
-        fn next(&mut self) -> Input;
+        fn next(&mut self) -> Span;
 
-        fn peek(&mut self, len: usize) -> Input;
+        fn peek(&mut self, len: usize) -> Span;
 
-        fn chomp(&mut self, len: usize) -> Input;
+        fn chomp(&mut self, len: usize) -> Span;
 
-        fn chomp_while(&mut self, f: impl Fn(&str) -> bool) -> Input;
+        fn chomp_while(&mut self, f: impl Fn(&str) -> bool) -> Span;
     }
 
     impl StateExt for State {
-        fn peek_nth(&mut self, len: usize) -> Input {
+        fn peek_nth(&mut self, len: usize) -> Span {
             peek_nth(len).parse(self)
         }
 
-        fn nth(&mut self, len: usize) -> Input {
+        fn nth(&mut self, len: usize) -> Span {
             nth(len).parse(self)
         }
 
-        fn next(&mut self) -> Input {
+        fn next(&mut self) -> Span {
             next().parse(self)
         }
 
-        fn peek(&mut self, len: usize) -> Input {
+        fn peek(&mut self, len: usize) -> Span {
             peek(len).parse(self)
         }
 
-        fn chomp(&mut self, len: usize) -> Input {
+        fn chomp(&mut self, len: usize) -> Span {
             chomp(len).parse(self)
         }
 
-        fn chomp_while(&mut self, f: impl Fn(&str) -> bool) -> Input {
+        fn chomp_while(&mut self, f: impl Fn(&str) -> bool) -> Span {
             chomp_while(f).parse(self)
         }
     }
 
-    pub fn peek_nth(len: usize) -> impl Parser<Input> {
+    pub fn peek_nth(len: usize) -> impl Parser<Span> {
         move |state: &mut State| {
             let mut iter = state.input.graphemes_idx();
 
@@ -65,7 +65,7 @@ pub mod utf {
         }
     }
 
-    pub fn nth(len: usize) -> impl Parser<Input> {
+    pub fn nth(len: usize) -> impl Parser<Span> {
         move |state: &mut State| {
             let output = peek_nth(len).parse(state);
             state.input.range.0 += output.range.0 + output.range.1;
@@ -75,11 +75,11 @@ pub mod utf {
         }
     }
 
-    pub fn next() -> impl Parser<Input> {
+    pub fn next() -> impl Parser<Span> {
         nth(0)
     }
 
-    pub fn peek(len: usize) -> impl Parser<Input> {
+    pub fn peek(len: usize) -> impl Parser<Span> {
         move |state: &mut State| {
             let iter = state.input.graphemes_idx();
             let (offset, grapheme) = iter.take(len).last().unwrap_or_default();
@@ -90,7 +90,7 @@ pub mod utf {
         }
     }
 
-    pub fn chomp(len: usize) -> impl Parser<Input> {
+    pub fn chomp(len: usize) -> impl Parser<Span> {
         move |state: &mut State| {
             let output = peek(len).parse(state);
             state.input.range.0 += output.range.1;
@@ -99,7 +99,7 @@ pub mod utf {
         }
     }
 
-    pub fn chomp_if(f: impl Fn(&str) -> bool) -> impl Parser<Input> {
+    pub fn chomp_if(f: impl Fn(&str) -> bool) -> impl Parser<Span> {
         move |state: &mut State| {
             let current = peek_nth(0).parse(state);
             let current = match current.as_ref() {
@@ -111,15 +111,15 @@ pub mod utf {
         }
     }
 
-    pub fn chomp_until(f: impl Fn(&str) -> bool) -> impl Parser<Input> {
+    pub fn chomp_until(f: impl Fn(&str) -> bool) -> impl Parser<Span> {
         chomp_while(move |c| !f(c))
     }
 
-    pub fn chomp_until_eof() -> impl Parser<Input> {
+    pub fn chomp_until_eof() -> impl Parser<Span> {
         chomp_until(move |c| c == "")
     }
 
-    pub fn chomp_while(f: impl Fn(&str) -> bool) -> impl Parser<Input> {
+    pub fn chomp_while(f: impl Fn(&str) -> bool) -> impl Parser<Span> {
         move |state: &mut State| {
             let mut len = 0usize;
             loop {
@@ -171,7 +171,7 @@ pub mod utf {
         #[test_case(chomp(99), "a\u{310}e\u{301}o\u{308}\u{332}\r\n", "")]
         #[test_case(chomp_while(|c| { c != "\n" && c != "\r\n" }),               "a\u{310}e\u{301}o\u{308}\u{332}",  "\r\n")]
         #[test_case(chomp_until(|c| { c == "\n" || c == "\r\n" }),               "a\u{310}e\u{301}o\u{308}\u{332}",  "\r\n")]
-        fn test_parser(p: impl Parser<Input>, expected: &'static str, expected_rest: &'static str) {
+        fn test_parser(p: impl Parser<Span>, expected: &'static str, expected_rest: &'static str) {
             let mut state: State = INPUT.into();
             let actual = p.parse(&mut state);
             assert_eq!(actual.as_ref(), expected);
@@ -204,7 +204,7 @@ pub fn token(token: &'static str) -> impl Parser {
 
 pub fn recognize1(
     name: NodeId,
-    parser: impl Parser<Input>,
+    parser: impl Parser<Span>,
     problem: impl Problem + Clone + 'static,
 ) -> impl Parser {
     move |state: &mut State| {
@@ -222,7 +222,7 @@ pub fn recognize1(
     }
 }
 
-pub fn recognize(name: NodeId, parser: impl Parser<Input>) -> impl Parser {
+pub fn recognize(name: NodeId, parser: impl Parser<Span>) -> impl Parser {
     move |state: &mut State| {
         let output = parser.parse(state);
 

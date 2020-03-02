@@ -5,11 +5,11 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub struct ParseErrorContext {
     pub node: NodeId,
-    pub span: Input,
+    pub span: Span,
 }
 
 impl ParseErrorContext {
-    pub fn new(node: NodeId, span: Input) -> Self {
+    pub fn new(node: NodeId, span: Span) -> Self {
         Self { node, span }
     }
 }
@@ -17,14 +17,14 @@ impl ParseErrorContext {
 #[derive(Debug)]
 pub struct ParseError {
     pub problem: Box<dyn Problem + 'static>,
-    pub span: Input,
+    pub span: Span,
     pub context: Vec<ParseErrorContext>,
 }
 
 impl ParseError {
     pub fn new(
         problem: Box<dyn Problem + 'static>,
-        span: Input,
+        span: Span,
         context: Vec<ParseErrorContext>,
     ) -> Self {
         Self {
@@ -36,7 +36,7 @@ impl ParseError {
 }
 
 pub struct State {
-    pub input: Input,
+    pub input: Span,
     pub nodes: Vec<Node>,
     extras: Vec<Option<Arc<dyn Parser>>>,
     parsing_extra: bool,
@@ -54,7 +54,7 @@ impl Debug for State {
 
 impl<'a> From<&'a str> for State {
     fn from(input: &'a str) -> State {
-        let input: Input = input.into();
+        let input: Span = input.into();
         Self {
             input: input.clone(),
             nodes: vec![Node::root(input)],

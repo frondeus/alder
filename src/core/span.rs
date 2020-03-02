@@ -2,20 +2,20 @@ use crate::*;
 use std::sync::Arc;
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct Input {
+pub struct Span {
     src: Arc<str>,
     pub(crate) range: (usize, usize), // pos, len
 }
 
 #[cfg(test)]
-impl Input {
+impl Span {
     pub fn test(src: &'static str, range: (usize, usize)) -> Self {
         let src: Arc<str> = Arc::from(src);
         Self { src, range }
     }
 }
 
-impl std::fmt::Debug for Input {
+impl std::fmt::Debug for Span {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.as_ref().fmt(f)?;
         write!(f, "{:?}", &self.range)?;
@@ -23,15 +23,15 @@ impl std::fmt::Debug for Input {
     }
 }
 
-impl<'a> From<&'a str> for Input {
-    fn from(input: &'a str) -> Input {
+impl<'a> From<&'a str> for Span {
+    fn from(input: &'a str) -> Span {
         let src: Arc<str> = Arc::from(input);
         let range = (0, src.len());
         Self { src, range }
     }
 }
 
-impl Offset for Input {
+impl Offset for Span {
     fn offset(&self, second: &Self) -> usize {
         let fst = self.range.0;
         let snd = second.range.0;
@@ -40,21 +40,21 @@ impl Offset for Input {
     }
 }
 
-impl AsRef<str> for Input {
+impl AsRef<str> for Span {
     fn as_ref(&self) -> &str {
         &self.src[self.range.0..self.range.0 + self.range.1]
     }
 }
 
 use unicode_segmentation::{GraphemeIndices, UnicodeSegmentation};
-impl Input {
+impl Span {
     pub fn graphemes_idx(&self) -> GraphemeIndices {
         self.as_ref().grapheme_indices(true)
     }
 }
 
-impl Input {
-    pub fn full(&self) -> Input {
+impl Span {
+    pub fn full(&self) -> Span {
         let src = self.src.clone();
         let len = src.len();
         let range = (0, len);
@@ -86,14 +86,14 @@ mod tests {
 
     #[test]
     fn input_0_create() {
-        let i: Input = "(foo)".into();
+        let i: Span = "(foo)".into();
 
         assert_eq!(i.as_ref(), "(foo)", "as_ref");
         assert_eq!(i.len(), 5, "len");
 
         assert_eq!(
             i,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (0, 5)
             }
@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn input_1_chomp_0() {
-        let mut i: Input = "(foo)".into();
+        let mut i: Span = "(foo)".into();
         let j = i.chomp_chars(0);
 
         assert_eq!(i.as_ref(), "(foo)");
@@ -110,7 +110,7 @@ mod tests {
 
         assert_eq!(
             i,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (0, 5)
             }
@@ -120,7 +120,7 @@ mod tests {
         assert_eq!(j.len(), 0);
         assert_eq!(
             j,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (0, 0)
             }
@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn input_2_chomp_1() {
-        let mut i: Input = "(foo)".into();
+        let mut i: Span = "(foo)".into();
         let j = i.chomp_chars(1);
 
         assert_eq!(i.as_ref(), "foo)");
@@ -137,7 +137,7 @@ mod tests {
 
         assert_eq!(
             i,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (1, 4)
             }
@@ -148,7 +148,7 @@ mod tests {
 
         assert_eq!(
             j,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (0, 1)
             }
@@ -157,7 +157,7 @@ mod tests {
 
     #[test]
     fn input_3_chomp_2() {
-        let mut i: Input = "(foo)".into();
+        let mut i: Span = "(foo)".into();
         let j = i.chomp_chars(2);
 
         assert_eq!(i.as_ref(), "oo)");
@@ -165,7 +165,7 @@ mod tests {
 
         assert_eq!(
             i,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (2, 3)
             }
@@ -176,7 +176,7 @@ mod tests {
 
         assert_eq!(
             j,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (0, 2)
             }
@@ -185,7 +185,7 @@ mod tests {
 
     #[test]
     fn input_4_chomp_999() {
-        let mut i: Input = "(foo)".into();
+        let mut i: Span = "(foo)".into();
         let j = i.chomp_chars(999);
 
         assert_eq!(i.as_ref(), "");
@@ -193,7 +193,7 @@ mod tests {
 
         assert_eq!(
             i,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (5, 0)
             }
@@ -204,7 +204,7 @@ mod tests {
 
         assert_eq!(
             j,
-            Input {
+            Span {
                 src: "(foo)".into(),
                 range: (0, 5)
             }

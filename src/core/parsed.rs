@@ -7,8 +7,8 @@ impl<P> Problem for P where P: Debug + Display {}
 
 #[derive(Debug)]
 pub struct Parsed {
-    pub input: Input,
-    pub rest: Input,
+    pub input: Span,
+    pub rest: Span,
     pub nodes: Vec<Node>,
     pub errors: Vec<ParseError>,
 }

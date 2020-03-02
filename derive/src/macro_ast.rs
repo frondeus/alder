@@ -15,6 +15,8 @@ struct CstInputReceiver {
     parser: Option<syn::Path>,
     #[darling(default)]
     node: Option<syn::Path>,
+    #[darling(default)]
+    skip: Option<syn::Path>,
 }
 
 #[derive(Debug, FromField)]
@@ -47,6 +49,7 @@ impl ToTokens for CstInputReceiver {
             ref data,
             ref parser,
             ref node,
+            ref skip,
         } = *self;
 
         let input_ident = ident;
@@ -68,10 +71,32 @@ impl ToTokens for CstInputReceiver {
                     false
                 })
                 .map(|node_field_pos| fields.remove(node_field_pos));
+            let span_field = fields
+                .iter()
+                .position(|CstFieldReceiver { ident, .. }| {
+                    if let Some(ident) = ident {
+                        let span_ident: Ident = parse_quote! { span };
+                        if ident == &span_ident {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    };
+                    false
+                })
+                .map(|node_field_pos| fields.remove(node_field_pos));
 
             generated.push(quote! {
-                let node = iter.next()?;
+                let mut node = iter.next()?;
             });
+
+            if let Some(node) = skip {
+                generated.push(quote! {
+                    while dbg!(node.is(#node)) {
+                        node = iter.next()?;
+                    }
+                });
+            }
 
             if let Some(node) = node {
                 generated.push(quote! {
@@ -80,6 +105,12 @@ impl ToTokens for CstInputReceiver {
             }
 
             if let Some(CstFieldReceiver { ident, .. }) = node_field {
+                idents.push(ident);
+            }
+            if let Some(CstFieldReceiver { ident, .. }) = span_field {
+                generated.push(quote! {
+                    let span = node.span.clone();
+                });
                 idents.push(ident);
             }
 
@@ -122,8 +153,17 @@ impl ToTokens for CstInputReceiver {
         if let Some(mut variants) = data.as_ref().take_enum() {
             generated.push(quote! {
                 let mut iter = iter.peekable();
-                let node = iter.peek()?;
+                let mut node = iter.peek()?;
             });
+
+            if let Some(node) = skip {
+                generated.push(quote! {
+                    while node.is(#node) {
+                        iter.next();
+                        node = iter.peek()?;
+                    }
+                });
+            }
 
             if let Some(node) = node {
                 generated.push(quote! {
@@ -169,8 +209,14 @@ impl ToTokens for CstInputReceiver {
                 impl #ident {
                     fn from_str(input: &str) -> Option<Self> {
                         let mut parsed = State::parse(input, #parser());
-                        let node = parsed.nodes.pop().unwrap();
-                        let nodes = node.iter().cloned().collect::<Vec<Node>>();
+                        //dbg!(&parsed.nodes.iter().map(|n| n.name).collect::<Vec<_>>());
+                        let nodes = parsed.nodes.drain(..)
+                        .flat_map(|node| {
+                            node.iter().cloned().collect::<Vec<Node>>()
+                        })
+                        .collect::<Vec<Node>>();
+                        //dbg!(&nodes.iter().map(|n| n.name).collect::<Vec<_>>());
+                        //dbg!(&nodes);
                         Self::parse(&mut nodes.into_iter())
                     }
                 }

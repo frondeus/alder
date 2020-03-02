@@ -1,4 +1,4 @@
-use crate::Input;
+use crate::Span as Input;
 use itertools::Itertools;
 use std::cmp::{Ordering, PartialOrd};
 use std::fmt::{Display, Error, Formatter};

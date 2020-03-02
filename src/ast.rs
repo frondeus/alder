@@ -19,3 +19,12 @@ where
         Some(res)
     }
 }
+
+impl<T> Ast for Box<T>
+where
+    T: Ast,
+{
+    fn parse(iter: &mut impl Iterator<Item = Node>) -> Option<Self> {
+        T::parse(iter).map(Box::new)
+    }
+}

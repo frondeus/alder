@@ -2,6 +2,14 @@ use crate::*;
 
 pub fn infix(
     name: NodeId,
+    next: impl Parser + Clone,
+    bp: impl Clone + for<'a> Fn(&'a str) -> Option<(i32, &'static str)>,
+) -> impl Parser {
+    infix_inner(name, 0, next, bp)
+}
+
+pub fn infix_inner(
+    name: NodeId,
     rbp: i32,
     next: impl Parser + Clone,
     bp: impl Clone + for<'a> Fn(&'a str) -> Option<(i32, &'static str)>,
@@ -25,7 +33,7 @@ pub fn infix(
 
             state.add_node(left);
             state.add(token(op_token));
-            state.add(infix(name, op_bp - 1, next.clone(), bp.clone()));
+            state.add(infix_inner(name, op_bp - 1, next.clone(), bp.clone()));
 
             left = state.nodes.pop().expect("Node");
             left.recalc_span(state);

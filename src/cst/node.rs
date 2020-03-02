@@ -17,7 +17,7 @@ impl NodeId {
 pub struct Node {
     pub name: NodeId,
     pub alias: Vec<NodeId>,
-    pub span: Input,
+    pub span: Span,
     pub children: Vec<Node>,
 }
 
@@ -28,7 +28,7 @@ impl Node {
 }
 
 impl Node {
-    pub fn root(span: Input) -> Self {
+    pub fn root(span: Span) -> Self {
         Self {
             name: NodeId::ROOT,
             span,
@@ -37,7 +37,7 @@ impl Node {
         }
     }
 
-    pub fn token(span: Input) -> Self {
+    pub fn token(span: Span) -> Self {
         Self {
             name: NodeId::TOKEN,
             span,
@@ -46,7 +46,7 @@ impl Node {
         }
     }
 
-    pub fn error(span: Input) -> Self {
+    pub fn error(span: Span) -> Self {
         Self {
             name: NodeId::ERROR,
             span,
@@ -59,7 +59,7 @@ impl Node {
         std::iter::once(self.name).chain(self.alias.iter().copied())
     }
 
-    pub fn all_names_with_span(&self) -> impl Iterator<Item = (NodeId, Input)> + '_ {
+    pub fn all_names_with_span(&self) -> impl Iterator<Item = (NodeId, Span)> + '_ {
         let s = self.span.clone();
         std::iter::once((self.name, self.span.clone()))
             .chain(self.alias.iter().map(move |n| (*n, s.clone())))

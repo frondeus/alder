@@ -4,16 +4,16 @@
 mod macros;
 
 mod core {
-    mod input;
     mod offset;
     mod parsed;
     mod parser;
+    mod span;
     mod state;
 
-    pub use input::*;
     pub use offset::*;
     pub use parsed::*;
     pub use parser::*;
+    pub use span::*;
     pub use state::*;
 }
 

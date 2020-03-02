@@ -1,11 +1,11 @@
-use crate::{Input, Node, NodeId, ParseError, Parsed};
+use crate::{Node, NodeId, ParseError, Parsed, Span};
 use std::fmt::{Display, Error, Formatter};
 use termion::{color, style};
 
 mod fancy_code;
 use fancy_code::FancyCode;
 
-impl Display for Input {
+impl Display for Span {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         write!(f, "{}", self.as_ref())?;
         Ok(())

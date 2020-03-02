@@ -38,13 +38,13 @@ pub fn is_xid_continue(s: &str) -> bool {
     !s.is_empty() && s.chars().all(|c| c.is_xid_continue())
 }
 
-pub fn ws0() -> impl Parser<Input> {
+pub fn ws0() -> impl Parser<Span> {
     chomp_while(is_ws)
 }
-pub fn inline_ws0() -> impl Parser<Input> {
+pub fn inline_ws0() -> impl Parser<Span> {
     chomp_while(is_inline_ws)
 }
-pub fn line_ending0() -> impl Parser<Input> {
+pub fn line_ending0() -> impl Parser<Span> {
     chomp_while(is_line_ending)
 }
 
