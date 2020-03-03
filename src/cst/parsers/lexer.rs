@@ -187,6 +187,18 @@ impl Parser for &'static str {
     }
 }
 
+impl Parser<Span> for &'static str {
+    fn parse(&self, state: &mut State) -> Span {
+        let token_len = self.graphemes(true).count();
+
+        let output = utf::peek(token_len).parse(state);
+        match output {
+            n if n.as_ref() == *self => utf::chomp(token_len).parse(state),
+            _ => utf::chomp(0).parse(state),
+        }
+    }
+}
+
 pub fn token(token: &'static str) -> impl Parser {
     let token_len = token.graphemes(true).count();
 

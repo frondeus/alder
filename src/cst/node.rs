@@ -65,6 +65,11 @@ impl Node {
             .chain(self.alias.iter().map(move |n| (*n, s.clone())))
     }
 
+    pub fn renamed(mut self, name: NodeId) -> Self {
+        self.name = name;
+        self
+    }
+
     pub fn with_alias(mut self, alias: NodeId) -> Self {
         self.add_alias(alias);
         self
