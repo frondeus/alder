@@ -27,6 +27,7 @@ mod cst {
 
 mod ast;
 
+#[cfg(feature = "tty")]
 mod display;
 
 pub use crate::core::*;
