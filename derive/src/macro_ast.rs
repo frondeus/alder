@@ -92,7 +92,7 @@ impl ToTokens for CstInputReceiver {
 
             if let Some(node) = skip {
                 generated.push(quote! {
-                    while dbg!(node.is(#node)) {
+                    while node.is(#node) {
                         node = iter.next()?;
                     }
                 });
@@ -207,7 +207,7 @@ impl ToTokens for CstInputReceiver {
             tokens.extend(quote! {
                 //impl std::str::FromStr for #ident {
                 impl #ident {
-                    fn from_str(input: &str) -> Option<Self> {
+                    pub fn from_str(input: &str) -> Option<Self> {
                         let mut parsed = State::parse(input, #parser());
                         //dbg!(&parsed.nodes.iter().map(|n| n.name).collect::<Vec<_>>());
                         let nodes = parsed.nodes.drain(..)

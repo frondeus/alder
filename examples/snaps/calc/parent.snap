@@ -1,21 +1,34 @@
 ```
 (1 + 2)
 ```
+
+TOKEN (EXTRA): "("(0, 1)
+BINARY (VALUE): "1 + 2"(1, 5)
+    NUMBER (VALUE): "1"(1, 1)
+    WS (EXTRA): " "(2, 1)
+    TOKEN: "+"(3, 1)
+    WS (EXTRA): " "(4, 1)
+    NUMBER (VALUE): "2"(5, 1)
+TOKEN (EXTRA): ")"(6, 1)
+
+NO PROBLEMS
+
 Binary(
     Binary {
         left: Number(
             Number {
+                value: 1,
                 span: "1"(1, 1),
             },
         ),
-        op: BinOp {
-            span: "+"(3, 1),
-        },
+        op: Add,
         right: Number(
             Number {
+                value: 2,
                 span: "2"(5, 1),
             },
         ),
         span: "1 + 2"(1, 5),
     },
 )
+Some(3)

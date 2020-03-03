@@ -1,0 +1,42 @@
+```
+-(1 + 2)
+```
+
+UNARY (VALUE): "-(1 + 2)"(0, 8)
+    TOKEN: "-"(0, 1)
+    TOKEN (EXTRA): "("(1, 1)
+    BINARY (VALUE): "1 + 2"(2, 5)
+        NUMBER (VALUE): "1"(2, 1)
+        WS (EXTRA): " "(3, 1)
+        TOKEN: "+"(4, 1)
+        WS (EXTRA): " "(5, 1)
+        NUMBER (VALUE): "2"(6, 1)
+    TOKEN (EXTRA): ")"(7, 1)
+
+NO PROBLEMS
+
+Unary(
+    Unary {
+        op: Min,
+        right: Binary(
+            Binary {
+                left: Number(
+                    Number {
+                        value: 1,
+                        span: "1"(2, 1),
+                    },
+                ),
+                op: Add,
+                right: Number(
+                    Number {
+                        value: 2,
+                        span: "2"(6, 1),
+                    },
+                ),
+                span: "1 + 2"(2, 5),
+            },
+        ),
+        span: "-(1 + 2)"(0, 8),
+    },
+)
+Some(-3)

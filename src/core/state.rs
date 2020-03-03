@@ -80,27 +80,28 @@ impl State {
     }
 
     pub fn add_node(&mut self, node: Node) {
-        if !self.parsing_extra && !self.panic {
-            self.add_extra();
-        }
-
         self.add_node_inner(node);
-
-        if !self.parsing_extra && !self.panic {
-            self.add_extra();
-        }
     }
 
     pub fn add(&mut self, parser: impl Parser) {
-        if !self.parsing_extra && !self.panic {
-            self.add_extra();
-        }
+        let extra = self.add_extra();
 
         let node = parser.parse(self);
+        let is_err = node.is(NodeId::ERROR);
+
+        if is_err {
+            self.add_node_inner(node);
+            return;
+        }
+
+        if let Some(extra) = extra {
+            self.add_node_inner(extra);
+        }
+
         self.add_node_inner(node);
 
-        if !self.parsing_extra && !self.panic {
-            self.add_extra();
+        if let Some(extra) = self.add_extra() {
+            self.add_node_inner(extra);
         }
     }
 }
@@ -156,14 +157,20 @@ impl State {
         self.nodes.last_mut()
     }
 
-    fn add_extra(&mut self) {
+    fn add_extra(&mut self) -> Option<Node> {
+        if self.parsing_extra {
+            return None;
+        }
+
         if let Some(Some(extra)) = self.extras.last() {
             self.parsing_extra = true;
             let extra = extra.clone();
             let mut extra_node = extra.parse(self);
             extra_node.add_alias(NodeId::EXTRA);
-            self.add_node_inner(extra_node);
             self.parsing_extra = false;
+            Some(extra_node)
+        } else {
+            None
         }
     }
 }

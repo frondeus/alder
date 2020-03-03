@@ -1,0 +1,21 @@
+```
+(2 ^^^ 3)
+```
+
+TOKEN (EXTRA): "("(0, 1)
+BINARY (VALUE): "2 ^^^ 3"(1, 7)
+    BINARY (VALUE): "2 ^^"(1, 4)
+        NUMBER (VALUE): "2"(1, 1)
+        WS (EXTRA): " "(2, 1)
+        ERROR: "^"(3, 1)
+        ERROR (VALUE): "^"(4, 1)
+    ERROR: "^"(5, 1)
+    WS (EXTRA): " "(6, 1)
+    NUMBER (VALUE): "3"(7, 1)
+TOKEN (EXTRA): ")"(8, 1)
+
+PROBLEMS:
+[38;5;1m--------------------------------- SYNTAX ERROR ---------------------------------[m
+I was parsing Value when found issue:
+[38;5;6m 0 |[38;5;15m[1m(2 ^^^ 3)[m[38;5;8m\EOF[m
+[38;5;6m ~ |[m   [38;5;9m^ Expected infix operator[m

@@ -1,0 +1,45 @@
+```
+1+2*5
+```
+
+BINARY (VALUE): "1+2*5"(0, 5)
+    NUMBER (VALUE): "1"(0, 1)
+    TOKEN: "+"(1, 1)
+    BINARY (VALUE): "2*5"(2, 3)
+        NUMBER (VALUE): "2"(2, 1)
+        TOKEN: "*"(3, 1)
+        NUMBER (VALUE): "5"(4, 1)
+
+NO PROBLEMS
+
+Binary(
+    Binary {
+        left: Number(
+            Number {
+                value: 1,
+                span: "1"(0, 1),
+            },
+        ),
+        op: Add,
+        right: Binary(
+            Binary {
+                left: Number(
+                    Number {
+                        value: 2,
+                        span: "2"(2, 1),
+                    },
+                ),
+                op: Mul,
+                right: Number(
+                    Number {
+                        value: 5,
+                        span: "5"(4, 1),
+                    },
+                ),
+                span: "2*5"(2, 3),
+            },
+        ),
+        span: "1+2*5"(0, 5),
+    },
+)
+Some(11)

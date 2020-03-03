@@ -14,6 +14,7 @@ pub fn raise(problem: impl Problem + Clone + 'static, len: usize) -> impl Parser
     move |state: &mut State| {
         let panic = state.panic;
         let span = state.input.chomp_chars(len);
+
         match state.last_error() {
             Some(err) if panic => {
                 err.span.range.1 += len;

@@ -92,6 +92,10 @@ impl Node {
         }
     }
 
+    pub fn has(&self, name: NodeId) -> bool {
+        self.children.iter().any(|c| c.is(name))
+    }
+
     pub fn is(&self, name: NodeId) -> bool {
         self.name == name || self.alias.iter().any(|alias| *alias == name)
     }

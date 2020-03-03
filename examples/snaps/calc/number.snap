@@ -1,8 +1,15 @@
 ```
 5
 ```
+
+NUMBER (VALUE): "5"(0, 1)
+
+NO PROBLEMS
+
 Number(
     Number {
+        value: 5,
         span: "5"(0, 1),
     },
 )
+Some(5)

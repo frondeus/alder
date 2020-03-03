@@ -14,7 +14,6 @@ mod cst {
 
             // Nodes
             Value,
-            Parent,
             Binary,
             Unary,
             Number
@@ -23,9 +22,11 @@ mod cst {
     use derive_more::Display;
     #[derive(Debug, Display, Clone)]
     enum Problem {
-        //TODO:
-        #[display(fmt = "Todo")]
-        Todo,
+        #[display(fmt = "Expected either digit or one of `+`, `-`, `/`, `*`, `(`")]
+        UnexpectedToken,
+
+        #[display(fmt = "Expected infix operator")]
+        UnexpectedInfix,
     }
 
     fn extra() -> std::sync::Arc<dyn Parser> {
@@ -38,35 +39,42 @@ mod cst {
     /// -2
     /// (2 + 3) * 4
     /// -(2 + 3)
+    /// 2 ^ 3
+    /// (2 ^ 3)
+    /// (2 ^^^ 3)
     #[alder_test]
     pub fn value() -> impl Parser {
         with_extra(
             extra(),
-            infix(Calc::Binary, left_value(), |op| match op {
-                "*" => Some((20, "*")),
-                "/" => Some((20, "/")),
-                "+" => Some((10, "+")),
-                "-" => Some((10, "-")),
-                _ => None
-            }).map(|node: Node| node.with_alias(Calc::Value))
+            pratt(Calc::Binary,
+                  vec![Calc::Value],
+                  |state: &mut State| left_value().parse(state),
+                  |state| match state.peek(1).as_ref() {
+                      "*" => Some((20, token("*").boxed())),
+                      "/" => Some((20, token("/").boxed())),
+                      "+" => Some((10, token("+").boxed())),
+                      "-" => Some((10, token("-").boxed())),
+                      "" | ")" => None,
+                      _ => Some((100, raise(Problem::UnexpectedInfix, 1).boxed())),
+            })
         )
     }
 
-    fn left_value() -> impl Parser + Clone {
-        |state: &mut State| v_node(Calc::Value, |state| {
+    fn left_value() -> impl Parser {
+        v_node(Calc::Value, |state| {
             match state.peek(1).as_ref() {
                 s if s.is_digits() => state.add(number()),
                 "(" => {
-                    state.add("(");
+                    state.add("(".as_extra());
                     state.add(value());
-                    state.add(")");
+                    state.add(")".as_extra());
                 },
                 "-" => {
                     state.add(minus());
                 },
-                _ => state.add(raise(Problem::Todo, 1)),
+                _ => state.add(raise(Problem::UnexpectedToken, 1)),
             };
-        }).parse(state)
+        })
     }
 
     fn minus() -> impl Parser {
@@ -84,59 +92,175 @@ mod cst {
 
 #[cfg(feature = "derive")]
 mod ast {
+    use crate::cst::Calc;
     use crate::*;
-    use alder::{Ast, Node, NodeId, Span, State};
+    use alder::{CstIterExt, FromCst, Node, NodeId, Span, State};
 
-    #[derive(Debug, Ast)]
-    #[cst(
-        parser = "cst::value",
-        node = "cst::Calc::Value",
-        skip = "NodeId::TOKEN"
-    )]
+    #[derive(Debug)]
     pub enum Value {
-        #[cst(tag = "cst::Calc::Number")]
         Number(Number),
-        #[cst(tag = "cst::Calc::Unary")]
         Unary(Unary),
-        #[cst(tag = "cst::Calc::Binary")]
         Binary(Binary),
-        #[cst(error)]
         Error(Node),
     }
 
-    #[derive(Debug, Ast)]
+    impl FromCst for Value {
+        fn from_node(node: &Node) -> Option<Self> {
+            if !node.is(Calc::Value) {
+                return None;
+            }
+            Number::from_node(node)
+                .map(Self::Number)
+                .or_else(|| Unary::from_node(node).map(Self::Unary))
+                .or_else(|| Binary::from_node(node).map(Self::Binary))
+                .or_else(|| Some(Self::Error(node.clone())))
+        }
+    }
+
+    impl Value {
+        pub fn eval(&self) -> Option<i32> {
+            match self {
+                Self::Number(n) => n.eval(),
+                Self::Unary(n) => n.eval(),
+                Self::Binary(n) => n.eval(),
+                Self::Error(_) => None,
+            }
+        }
+    }
+
+    #[derive(Debug)]
     pub struct Number {
+        value: i32,
         span: Span,
     }
 
-    #[derive(Debug, Ast)]
+    impl FromCst for Number {
+        fn from_node(node: &Node) -> Option<Self> {
+            if !node.is(Calc::Number) {
+                return None;
+            }
+            Some(Self {
+                value: node.span.as_ref().parse().unwrap(),
+                span: node.span.clone(),
+            })
+        }
+    }
+
+    impl Number {
+        pub fn eval(&self) -> Option<i32> {
+            Some(self.value)
+        }
+    }
+
+    #[derive(Debug)]
     pub struct Unary {
-        #[cst(find = "NodeId::TOKEN")]
         op: UnOp,
-        #[cst(find = "cst::Calc::Value")]
         right: Box<Value>,
         span: Span,
     }
 
-    #[derive(Debug, Ast)]
+    impl FromCst for Unary {
+        fn from_node(node: &Node) -> Option<Self> {
+            if !node.is(Calc::Unary) {
+                return None;
+            }
+            let mut iter = node.children.iter();
+            let op = iter.find_cst()?;
+            let right = iter.find_cst().map(Box::new)?;
+            Some(Self {
+                op,
+                right,
+                span: node.span.clone(),
+            })
+        }
+    }
+
+    impl Unary {
+        pub fn eval(&self) -> Option<i32> {
+            let right = self.right.eval()?;
+            match self.op {
+                UnOp::Min => Some(-right),
+            }
+        }
+    }
+
+    #[derive(Debug)]
     pub struct Binary {
-        #[cst(find = "cst::Calc::Value")]
         left: Box<Value>,
-        #[cst(find = "NodeId::TOKEN")]
         op: BinOp,
-        #[cst(find = "cst::Calc::Value")]
         right: Box<Value>,
         span: Span,
     }
 
-    #[derive(Debug, Ast)]
-    pub struct BinOp {
-        span: Span,
+    impl FromCst for Binary {
+        fn from_node(node: &Node) -> Option<Self> {
+            if !node.is(Calc::Binary) {
+                return None;
+            }
+            let mut iter = node.children.iter();
+            let left = iter.find_cst().map(Box::new)?;
+            let op = iter.find_cst()?;
+            let right = iter.find_cst().map(Box::new)?;
+            Some(Self {
+                left,
+                op,
+                right,
+                span: node.span.clone(),
+            })
+        }
     }
 
-    #[derive(Debug, Ast)]
-    pub struct UnOp {
-        span: Span,
+    impl Binary {
+        pub fn eval(&self) -> Option<i32> {
+            let left = self.left.eval()?;
+            let right = self.right.eval()?;
+            Some(match self.op {
+                BinOp::Add => left + right,
+                BinOp::Sub => left - right,
+                BinOp::Div => left / right,
+                BinOp::Mul => left * right,
+            })
+        }
+    }
+
+    #[derive(Debug)]
+    pub enum BinOp {
+        Add,
+        Mul,
+        Sub,
+        Div,
+    }
+
+    impl FromCst for BinOp {
+        fn from_node(node: &Node) -> Option<Self> {
+            if !node.is(NodeId::TOKEN) {
+                return None;
+            }
+            match node.span.as_ref() {
+                "+" => Some(Self::Add),
+                "*" => Some(Self::Mul),
+                "-" => Some(Self::Sub),
+                "/" => Some(Self::Div),
+                _ => None,
+            }
+        }
+    }
+
+    #[derive(Debug)]
+    pub enum UnOp {
+        Min,
+    }
+
+    impl FromCst for UnOp {
+        fn from_node(node: &Node) -> Option<Self> {
+            if !node.is(NodeId::TOKEN) {
+                return None;
+            }
+            match node.span.as_ref() {
+                "-" => Some(Self::Min),
+                _ => None,
+            }
+        }
     }
 
     #[cfg(test)]
@@ -147,199 +271,45 @@ mod ast {
 
         #[test_case(r#"5"#, "number")]
         #[test_case(r#"1+2"#, "infix")]
-        #[test_case(r#"1+2 * 5"#, "preced")]
+        #[test_case(r#"1+2*5"#, "preced")]
         #[test_case(r#"(1 + 2)"#, "parent")]
         #[test_case(r#"-5"#, "unary")]
         #[test_case(r#"-(1 + 2)"#, "unary_parent")]
+        #[test_case(r#"-(1 + err)"#, "error")]
+        #[test_case(r#"1 + 1 ^ 2"#, "error2")]
         fn expr_test(input: &str, test_case_name: &str) {
-            let expr = Value::from_str(input).unwrap();
-            let actual_debug = format!("```\n{}\n```\n{:#?}", input, expr);
+            let cst = State::parse(input, crate::cst::value());
+            let mut nodes = cst.nodes.iter();
+            let val = nodes.find_cst::<Value>().unwrap();
+            let actual = val.eval();
 
+            let actual_debug = format!("{}\n{:#?}\n{:?}", &cst, val, actual);
             alder::testing::snap(actual_debug, file!(), test_case_name);
         }
     }
 }
-/*
-mod ast {
 
+fn main() {
+    #[cfg(feature = "derive")]
+    {
+        use crate::ast::Value;
+        use alder::{CstIterExt, State};
 
-    impl Value {
-        fn name(&self) -> &str {
-            match self {
-                Value::String(_) => "string",
-                Value::Boolean(_) => "boolean",
-                Value::Array(_) => "array",
-                Value::Object(_) => "object",
-                Value::Error(_) => "error",
+        let arg = std::env::args().nth(1);
+        match arg {
+            Some(input) => {
+                print!("{}", &input);
+                let cst = State::parse(&input, crate::cst::value());
+                let mut nodes = cst.nodes.iter();
+                let val = nodes.find_cst::<Value>().unwrap();
+                if let Some(actual) = val.eval() {
+                    println!("= {}", actual);
+                } else {
+                    println!();
+                    println!("{}", &cst);
+                }
             }
-        }
-        fn as_string(&self) -> &String {
-            match self {
-                Value::String(s) => s,
-                _ => panic!("Expected string"),
-            }
-        }
-
-        fn as_boolean(&self) -> &Boolean {
-            match self {
-                Value::Boolean(b) => b,
-                _ => panic!("Expected boolean"),
-            }
-        }
-
-        fn as_array(&self) -> &Array {
-            match self {
-                Value::Array(a) => a,
-                v => panic!("Expected array, found: {}", v.name()),
-            }
-        }
-
-        fn as_object(&self) -> &Object {
-            match self {
-                Value::Object(o) => o,
-                v => panic!("Expected object, found: {}", v.name()),
-            }
-        }
-    }
-
-    #[derive(Debug, PartialEq, Eq, Ast)]
-    #[cst(node = "cst::Json::String")]
-    struct String {
-        node: Node,
-    }
-
-    impl String {
-        fn value(&self) -> &str {
-            self.node
-                .children
-                .iter()
-                .find(|c| c.is(cst::Json::Value))
-                .map(|value| value.span.as_ref())
-                .unwrap_or_default()
-        }
-    }
-
-    #[derive(Debug, Ast)]
-    #[cst(node = "cst::Json::Boolean")]
-    struct Boolean {
-        node: Node,
-    }
-
-    impl Boolean {
-        fn value(&self) -> bool {
-            self.node.span.as_ref() == "true"
-        }
-    }
-
-    #[derive(Debug, Ast)]
-    #[cst(node = "cst::Json::Array")]
-    struct Array {
-        node: Node,
-        children: Vec<Value>,
-    }
-
-    impl Array {
-        fn iter(&self) -> impl Iterator<Item = &Value> {
-            self.children.iter()
-        }
-    }
-
-    #[derive(Debug, Ast)]
-    #[cst(node = "cst::Json::Object")]
-    struct Object {
-        #[cst(flatten)]
-        pairs: Vec<KeyValuePair>,
-        node: Node,
-    }
-
-    impl Object {
-        fn iter(&self) -> impl Iterator<Item = (&str, &Value)> {
-            self.pairs
-                .iter()
-                .map(|KeyValuePair { key, value }| (key.value(), value))
-        }
-    }
-
-    #[derive(Debug, Ast)]
-    struct KeyValuePair {
-        #[cst(find = "cst::Json::Key")]
-        key: String,
-        #[cst(find = "cst::Json::Value")]
-        value: Value,
-    }
-
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-
-        #[test]
-        fn string() {
-            let value = Value::from_str(r#""true""#).unwrap();
-            let v = value.as_string();
-            assert_eq!("true", v.value());
-        }
-
-        #[test]
-        fn boolean() {
-            let value = Value::from_str(r#"true"#).unwrap();
-            let v = value.as_boolean();
-            assert_eq!(true, v.value());
-
-            let value = Value::from_str(r#"false"#).unwrap();
-            let v = value.as_boolean();
-            assert_eq!(false, v.value());
-        }
-
-        #[test]
-        fn array() {
-            let value = Value::from_str("[true,false]").unwrap();
-            let v = value.as_array();
-            let values = v
-                .iter()
-                .map(|v| v.as_boolean())
-                .map(|v| v.value())
-                .collect::<Vec<_>>();
-
-            assert_eq!(vec![true, false], values);
-        }
-
-        #[test]
-        fn object() {
-            let value = Value::from_str(r#"{ "a": true, "b": false }"#).unwrap();
-            let v = value.as_object();
-            let values = v
-                .iter()
-                .map(|(k, v)| (k, v.as_boolean().value()))
-                .collect::<Vec<_>>();
-
-            assert_eq!(values, vec![("a", true), ("b", false)]);
-        }
-
-        #[test]
-        fn adv_object() {
-            let value = Value::from_str(r#"{ "a": true, "c": [true], "b": false }"#).unwrap();
-            let v = value.as_object();
-            let values = v.iter().map(|(k, v)| (k, v.name())).collect::<Vec<_>>();
-
-            assert_eq!(
-                values,
-                vec![("a", "boolean"), ("c", "array"), ("b", "boolean")]
-            );
-        }
-
-        #[test]
-        fn err_object() {
-            let value = Value::from_str(r#"{ "a": true, c": [true], "b": false }"#).unwrap();
-            let v = value.as_object();
-            let values = v.iter().map(|(k, v)| (k, v.name())).collect::<Vec<_>>();
-
-            assert_eq!(
-                values,
-                vec![("a", "boolean"), ("", "array"), ("b", "boolean")]
-            );
+            None => eprintln!("Expected at least one arg."),
         }
     }
 }
-*/
-
-fn main() {}

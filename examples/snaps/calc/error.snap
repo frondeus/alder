@@ -1,0 +1,55 @@
+```
+-(1 + err)
+```
+
+UNARY (VALUE): "-(1 + er"(0, 8)
+    TOKEN: "-"(0, 1)
+    TOKEN (EXTRA): "("(1, 1)
+    BINARY (VALUE): "1 + e"(2, 5)
+        NUMBER (VALUE): "1"(2, 1)
+        WS (EXTRA): " "(3, 1)
+        TOKEN: "+"(4, 1)
+        WS (EXTRA): " "(5, 1)
+        ERROR (VALUE): "e"(6, 1)
+    ERROR (EXTRA): "r"(7, 1)
+
+REST: "r)"(8, 2)
+PROBLEMS:
+[38;5;1m--------------------------------- SYNTAX ERROR ---------------------------------[m
+I was parsing Value when found issue:
+[38;5;6m 0 |[38;5;15m[1m-(1 + err)[m[38;5;8m\EOF[m
+[38;5;6m ~ |[m      [38;5;9m^ Expected either digit or one of `+`, `-`, `/`, `*`, `(`[m
+
+Unary(
+    Unary {
+        op: Min,
+        right: Binary(
+            Binary {
+                left: Number(
+                    Number {
+                        value: 1,
+                        span: "1"(2, 1),
+                    },
+                ),
+                op: Add,
+                right: Error(
+                    Node {
+                        name: NodeId(
+                            "ERROR",
+                        ),
+                        alias: [
+                            NodeId(
+                                "Value",
+                            ),
+                        ],
+                        span: "e"(6, 1),
+                        children: [],
+                    },
+                ),
+                span: "1 + e"(2, 5),
+            },
+        ),
+        span: "-(1 + er"(0, 8),
+    },
+)
+None
