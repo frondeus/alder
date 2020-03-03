@@ -1,0 +1,12 @@
+```
+2 + 3
+```
+
+BINARY (VALUE): "2 + 3"(0, 5)
+    NUMBER (VALUE): "2"(0, 1)
+    WS (EXTRA): " "(1, 1)
+    TOKEN: "+"(2, 1)
+    WS (EXTRA): " "(3, 1)
+    NUMBER (VALUE): "3"(4, 1)
+
+NO PROBLEMS

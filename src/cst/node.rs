@@ -70,6 +70,11 @@ impl Node {
         self
     }
 
+    pub fn with_no_alias(mut self) -> Self {
+        self.alias.clear();
+        self
+    }
+
     pub fn with_alias(mut self, alias: NodeId) -> Self {
         self.add_alias(alias);
         self

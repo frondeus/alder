@@ -1,0 +1,16 @@
+```
+-(2 + 3)
+```
+
+UNARY (VALUE): "-(2 + 3)"(0, 8)
+    TOKEN: "-"(0, 1)
+    TOKEN (VALUE): "("(1, 1)
+    BINARY (VALUE): "2 + 3"(2, 5)
+        NUMBER (VALUE): "2"(2, 1)
+        WS (EXTRA): " "(3, 1)
+        TOKEN: "+"(4, 1)
+        WS (EXTRA): " "(5, 1)
+        NUMBER (VALUE): "3"(6, 1)
+    TOKEN (VALUE): ")"(7, 1)
+
+NO PROBLEMS

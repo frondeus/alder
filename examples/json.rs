@@ -50,16 +50,12 @@ mod cst {
         InvalidTokenComment,
     }
 
-    fn is_whitespace(s: &str) -> bool {
-        !s.is_empty() && s.chars().all(|c| c.is_whitespace())
-    }
-
     fn extra() -> std::sync::Arc<dyn Parser> {
         v_node(NodeId::EXTRA, |state| {
             while !state.panic {
                 match state.peek(1).as_ref() {
                     "" => break,
-                    s if is_whitespace(s) => state.add(ws()),
+                    s if s.is_ws() => state.add(ws()),
                     "/" => state.add(comment()),
                     _ => break,
                 }
@@ -69,17 +65,7 @@ mod cst {
     }
 
     fn ws() -> impl Parser {
-        recognize(Json::WS, chomp_while( |c| {
-            is_whitespace(c)
-        }))
-    }
-
-    fn is_newline(c: &str) -> bool {
-        c == "\r\n" || c == "\n"
-    }
-
-    fn is_not_newline(c: &str) -> bool {
-        !is_newline(c)
+        recognize(Json::WS, chomp_while(is_ws))
     }
 
     /// // fooo
@@ -97,7 +83,7 @@ mod cst {
     fn comment() -> impl Parser {
         v_node(Json::Comment,
                |state| match state.peek(2).as_ref() {
-                   "//" => state.add(recognize(Json::InlineComment, chomp_while(is_not_newline))),
+                   "//" => state.add(recognize(Json::InlineComment, chomp_until(is_line_ending))),
                    "/*" => state.add(multiline_comment()),
                    _ => state.add(raise(Problem::InvalidTokenComment, 1)),
                }
@@ -185,7 +171,7 @@ mod cst {
     pub fn string() -> impl Parser {
         no_extra(node(Json::String, |state| {
             state.add("\"");
-            state.add(recognize(Json::Value,chomp_while( |c| c != "\"" && is_not_newline(c))));
+            state.add(recognize(Json::Value,chomp_until( |c| c == "\"" || c.is_line_ending())));
             state.add("\"");
         }))
     }

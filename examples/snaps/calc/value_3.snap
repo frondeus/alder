@@ -1,0 +1,9 @@
+```
+-2
+```
+
+UNARY (VALUE): "-2"(0, 2)
+    TOKEN: "-"(0, 1)
+    NUMBER (VALUE): "2"(1, 1)
+
+NO PROBLEMS

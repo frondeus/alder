@@ -1,0 +1,21 @@
+```
+(1 + 2)
+```
+Binary(
+    Binary {
+        left: Number(
+            Number {
+                span: "1"(1, 1),
+            },
+        ),
+        op: BinOp {
+            span: "+"(3, 1),
+        },
+        right: Number(
+            Number {
+                span: "2"(5, 1),
+            },
+        ),
+        span: "1 + 2"(1, 5),
+    },
+)

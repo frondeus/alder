@@ -1,0 +1,19 @@
+```
+(2 + 3) * 4
+```
+
+BINARY (VALUE): "(2 + 3) * 4"(0, 11)
+    TOKEN (VALUE): "("(0, 1)
+    BINARY (VALUE): "2 + 3"(1, 5)
+        NUMBER (VALUE): "2"(1, 1)
+        WS (EXTRA): " "(2, 1)
+        TOKEN: "+"(3, 1)
+        WS (EXTRA): " "(4, 1)
+        NUMBER (VALUE): "3"(5, 1)
+    TOKEN (VALUE): ")"(6, 1)
+    WS (EXTRA): " "(7, 1)
+    TOKEN: "*"(8, 1)
+    WS (EXTRA): " "(9, 1)
+    NUMBER (VALUE): "4"(10, 1)
+
+NO PROBLEMS
